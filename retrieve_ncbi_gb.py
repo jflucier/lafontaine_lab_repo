@@ -4,11 +4,11 @@ import pandas as pd
 from Bio import Entrez
 from Bio import SeqIO
 
-RETMAX = 10**9
+RETMAX = 10 ** 9
 GB_EXT = ".gb"
 
-def get_annotation(input_f, outdir, email, batchsize):
 
+def get_annotation(input_f, outdir, email, batchsize, api):
     def accessions_to_gb(accessions, db, batchsize, retmax):
         def batch(sequence, size):
             l = len(accessions)
@@ -71,6 +71,7 @@ def get_annotation(input_f, outdir, email, batchsize):
 
     res = pd.read_csv(input_f, sep='\t', index_col="accession.1")
     Entrez.email = email
+    Entrez.api_key = api
     x = res.groupby('accession.1')
 
     for acc, row in x:
@@ -78,7 +79,7 @@ def get_annotation(input_f, outdir, email, batchsize):
 
         t_acc_lst = []
         for a in row['target name']:
-            if not os.path.exists(os.path.join(outdir, a + GB_EXT))\
+            if not os.path.exists(os.path.join(outdir, a + GB_EXT)) \
                     and a not in t_acc_lst:
                 t_acc_lst.append(a)
 
@@ -87,6 +88,7 @@ def get_annotation(input_f, outdir, email, batchsize):
 
         print(f"Done {acc}")
 
+
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
 
@@ -94,7 +96,11 @@ if __name__ == '__main__':
     argParser.add_argument("-i", "--input", help="model tsv result file", required=True)
     argParser.add_argument("-o", "--output", help="output dir", required=True)
     argParser.add_argument("-e", "--email", help="your entrez email", required=True)
-    argParser.add_argument("-b", "--batchsize", nargs='?', help="download batch size (default 10)", const=10, type=int, default=10)
+    argParser.add_argument("-b", "--batchsize", nargs='?', help="download batch size (default 10)", const=10, type=int,
+                           default=10)
+    # 531f1f613b46db57ecced9016ef7441fce09
+    argParser.add_argument("-a", "--api", nargs='?', help="ncbi api key", const="", type=str,
+                           default="")
 
     args = argParser.parse_args()
     # f = "/storage/Documents/service/biologie/lafontaine/20230920_riboswitch_eukaryotes/all.found.taxid.tsv"
@@ -105,5 +111,6 @@ if __name__ == '__main__':
         args.input,
         args.output,
         args.email,
-        args.batchsize
+        args.batchsize,
+        args.api
     )
