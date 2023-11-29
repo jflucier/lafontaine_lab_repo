@@ -43,7 +43,12 @@ def get_annotation(input_f, outdir, email, batchsize, api):
 
             # get GB files
             search_handle = Entrez.epost(db=db, id=",".join(gi_list))
-            search_results = Entrez.read(search_handle)
+            try:
+                search_results = Entrez.read(search_handle)
+            except RuntimeError:
+                print("Oops! entrez.read error, lets try again!")
+                search_results = Entrez.read(search_handle)
+                
             webenv, query_key = search_results["WebEnv"], search_results["QueryKey"]
             records_handle = Entrez.efetch(
                 db=db,
