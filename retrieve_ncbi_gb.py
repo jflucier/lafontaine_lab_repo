@@ -38,15 +38,16 @@ def get_annotation(input_f, outdir, email, batchsize, api):
         def process_batch(accessions_batch):
             # get GI for query accessions
             query = " ".join(accessions_batch)
-            query_handle = Entrez.esearch(db=db, term=query, retmax=retmax)
-            gi_list = Entrez.read(query_handle)['IdList']
-
             # get GB files
             try:
+                query_handle = Entrez.esearch(db=db, term=query, retmax=retmax)
+                gi_list = Entrez.read(query_handle)['IdList']
                 search_handle = Entrez.epost(db=db, id=",".join(gi_list))
                 search_results = Entrez.read(search_handle)
             except RuntimeError:
                 print("Oops! entrez.read error, lets try again!")
+                query_handle = Entrez.esearch(db=db, term=query, retmax=retmax)
+                gi_list = Entrez.read(query_handle)['IdList']
                 search_handle = Entrez.epost(db=db, id=",".join(gi_list))
                 search_results = Entrez.read(search_handle)
 
