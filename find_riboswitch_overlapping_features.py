@@ -12,9 +12,10 @@ def find_overlapping_features(in_f, genome_path, out):
     res = pd.read_csv(in_f, sep='\t', index_col="accession.1")
     x = res.groupby('accession.1')
 
-    for acc, row in x:
-        print(f"{acc}")
 
+    for acc, row in x:
+        print(f"Finding overlapping features for {acc} hits")
+        all_feat = []
         for _, r in row.iterrows():
             a = r['target name']
             start = r['target from coord']
@@ -27,20 +28,42 @@ def find_overlapping_features(in_f, genome_path, out):
             else:
                 genome = SeqIO.read(gb_path, "genbank")
                 overlapping_feat = find_features(genome, start, end)
-                output_features(out, acc, r, overlapping_feat)
+                all_feat.append({
+                    'start': start,
+                    'end': end,
+                    'target': a,
+                    'acc': acc,
+                    'features': overlapping_feat
+                })
+
+        l = len(all_feat)
+        print(f"Ouputting results for {acc}: {l} overlapping hits identified")
+        output_features(out, all_feat)
 
 
-def output_features(out, acc, r, overlapping_feat):
-    start = r['target from coord']
-    end = r['target to coord']
-    target = r['target name']
-    # Print the overlapping features
+def output_features(out, all_feat):
     with open(out, "a") as output:
-        for feature in overlapping_feat:
-            g = feature.qualifiers['gene']
-            xref = feature.qualifiers['db_xref']
-            loc = feature.location
-            output.write(f"{acc}\t{target}\t{start}\t{end}\t{g}\t{loc}\t{xref}\n")
+        for f in all_feat:
+            start = f['start']
+            end = f['end']
+            target = f['target']
+            acc = f['acc']
+            overlapping_feat = f['features']
+            # Print the overlapping features
+            if len(overlapping_feat) > 0:
+                for feature in overlapping_feat:
+                    if 'gene' in feature.qualifiers:
+                        g = feature.qualifiers['gene']
+                    elif 'locus_tag' in feature.qualifiers:
+                        g = feature.qualifiers['locus_tag']
+                    else:
+                        print(f"key gene or locau_tag not found in feature: {feature}")
+                        sys.exit(0)
+                    xref = feature.qualifiers['db_xref']
+                    loc = feature.location
+                    output.write(f"{acc}\t{target}\t{start}\t{end}\t{g}\t{loc}\t{xref}\n")
+            else:
+                output.write(f"{acc}\t{target}\t{start}\t{end}\t\t\t\n")
 
 
 def find_features(genome, start, end):
