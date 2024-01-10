@@ -76,10 +76,10 @@ def get_annotation(input_f, outdir, email, batchsize, api):
         with open(os.path.join(dir, record.id + GB_EXT), "w") as output:
             SeqIO.write(record, output, "gb")
 
-    res = pd.read_csv(input_f, sep='\t', index_col="accession.1")
+    res = pd.read_csv(input_f, sep='\t', index_col="accession")
     Entrez.email = email
     Entrez.api_key = api
-    x = res.groupby('accession.1')
+    x = res.groupby('accession')
 
     for acc, row in x:
         print(f"{acc}")
