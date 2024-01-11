@@ -26,6 +26,7 @@ def find_overlapping_features(in_f, genome_path, out):
                 print(f"Genbank not found: {gb_path}")
                 sys.exit(0)
             else:
+                print(f"Genbank found: {gb_path}")
                 genome = SeqIO.read(gb_path, "genbank")
                 overlapping_feat = find_features(genome, start, end)
                 all_feat.append({
