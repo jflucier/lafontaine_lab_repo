@@ -76,24 +76,45 @@ def get_annotation(input_f, outdir, email, batchsize, api):
         with open(os.path.join(dir, record.id + GB_EXT), "w") as output:
             SeqIO.write(record, output, "gb")
 
-    res = pd.read_csv(input_f, sep='\t', index_col="accession")
+    # res = pd.read_csv(input_f, sep='\t', index_col="accession.1")
+    res = pd.read_csv(input_f, sep='\t')
     Entrez.email = email
     Entrez.api_key = api
     x = res.groupby('accession')
 
     for acc, row in x:
         print(f"{acc}")
+        if not os.path.exists(os.path.join(outdir, acc + GB_EXT)) :
+            query_handle = Entrez.esearch(db="nuccore", term=acc, retmax=RETMAX)
+            gi_list = Entrez.read(query_handle)['IdList']
+            search_handle = Entrez.epost(db="nuccore", id=",".join(gi_list))
+            search_results = Entrez.read(search_handle)
+            webenv, query_key = search_results["WebEnv"], search_results["QueryKey"]
+            records_handle = Entrez.efetch(
+                db="nuccore",
+                rettype="gbwithparts",
+                retmax=batchsize,
+                webenv=webenv,
+                query_key=query_key,
+                retmode="text"
+            )
+            genomes_it = SeqIO.parse(records_handle, "genbank")
+            for record in genomes_it:
+                write_record(outdir, record)
+                print(f"Done {record}")
 
-        t_acc_lst = []
-        for a in row['target name']:
-            if not os.path.exists(os.path.join(outdir, a + GB_EXT)) \
-                    and a not in t_acc_lst:
-                t_acc_lst.append(a)
 
-        for record in accessions_to_gb(t_acc_lst, "nuccore", batchsize, RETMAX):
-            write_record(outdir, record)
+        # t_acc_lst = []
+        # for a in row['target name']:
+        #     if not os.path.exists(os.path.join(outdir, a + GB_EXT)) \
+        #             and a not in t_acc_lst:
+        #         t_acc_lst.append(a)
 
-        print(f"Done {acc}")
+        # for record in accessions_to_gb(t_acc_lst, "nuccore", batchsize, RETMAX):
+        #     write_record(outdir, record)
+    # for record in accessions_to_gb(t_acc_lst, "nuccore", batchsize, RETMAX):
+    #     write_record(outdir, record)
+    #     print(f"Done {record}")
 
 
 if __name__ == '__main__':
