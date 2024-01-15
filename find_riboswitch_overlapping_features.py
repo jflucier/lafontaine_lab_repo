@@ -1,5 +1,7 @@
 import os
 import argparse
+import sys
+
 import pandas as pd
 from Bio import SeqIO
 from Bio.SeqFeature import FeatureLocation
@@ -53,15 +55,15 @@ def output_features(out, all_feat):
             # Print the overlapping features
             if len(overlapping_feat) > 0:
                 for feature in overlapping_feat:
-                    if 'gene' in feature.qualifiers:
-                        g = feature.qualifiers['gene']
-                    elif 'locus_tag' in feature.qualifiers:
-                        g = feature.qualifiers['locus_tag']
+                    if 'gene' in feature["f"].qualifiers:
+                        g = feature["f"].qualifiers['gene']
+                    elif 'locus_tag' in feature["f"].qualifiers:
+                        g = feature["f"].qualifiers['locus_tag']
                     else:
-                        print(f"key gene or locau_tag not found in feature: {feature}")
+                        print(f"key gene or locus_tag not found in feature: {feature}")
                         sys.exit(0)
-                    xref = feature.qualifiers['db_xref']
-                    loc = feature.location
+                    xref = feature["f"].qualifiers['db_xref']
+                    loc = feature["t"] + ":" + str(feature["f"].location.start) + "-" + str(feature["f"].location.end)
                     output.write(f"{acc}\t{target}\t{start}\t{end}\t{g}\t{loc}\t{xref}\n")
             else:
                 output.write(f"{acc}\t{target}\t{start}\t{end}\t\t\t\n")
@@ -71,13 +73,30 @@ def find_features(genome, start, end):
     # Find all features that overlap the range
     overlapping_features = []
     for feature in genome.features:
-        if feature.type == 'gene':
-            if isinstance(feature.location, FeatureLocation):
-                if feature.location.start - OVERLAP_MARGIN <= end and feature.location.end + OVERLAP_MARGIN >= start:
-                    overlapping_features.append(feature)
+        # if feature.type == 'CDS' and feature.qualifiers['gene'][0] == 'ROBO2':
+        if feature.type == 'CDS':
+            # if isinstance(feature.location, CompoundLocation):
+            if feature.location.start - OVERLAP_MARGIN <= end and feature.location.end + OVERLAP_MARGIN >= start:
+                t = overlap_type(feature, start, end)
+                overlapping_features.append({
+                    "f": feature,
+                    "t": t
+                })
 
     return overlapping_features
 
+def overlap_type(feature, start, end):
+    if feature.location.start - OVERLAP_MARGIN >= start < feature.location.start:
+        return 'UTR5'
+    elif feature.location.end + OVERLAP_MARGIN <= end > feature.location.end:
+        return 'UTR3'
+    else:
+        # loop through exons
+        for l in feature.location.parts:
+            if l.start >= start and l.end <= end:
+                return 'exon'
+
+        return 'intron'
 
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
