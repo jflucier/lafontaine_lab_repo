@@ -63,8 +63,9 @@ def output_features(out, all_feat):
                         print(f"key gene or locus_tag not found in feature: {feature}")
                         sys.exit(0)
                     xref = feature["f"].qualifiers['db_xref']
+                    prod = feature["f"].qualifiers['product']
                     loc = feature["t"] + ":" + str(feature["f"].location.start) + "-" + str(feature["f"].location.end)
-                    output.write(f"{acc}\t{target}\t{start}\t{end}\t{g}\t{loc}\t{xref}\n")
+                    output.write(f"{acc}\t{target}\t{start}\t{end}\t{g}\t{loc}\t{xref}\t{prod}\n")
             else:
                 output.write(f"{acc}\t{target}\t{start}\t{end}\t\t\t\n")
 
