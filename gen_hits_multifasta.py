@@ -74,7 +74,7 @@ if __name__ == '__main__':
     argParser.add_argument("-i", "--input", help="model tsv result file", required=True)
     argParser.add_argument("-o", "--output", help="output filepath", required=True)
     argParser.add_argument("-g", "--genbank", help="genbank dir", required=True)
-    argParser.add_argument("-off", "--offset", help="sequence offset", default=500)
+    argParser.add_argument("-off", "--offset", help="sequence offset", default=500, type=int)
 
     args = argParser.parse_args()
     i = args.input
