@@ -9,9 +9,9 @@ from Bio.SeqFeature import FeatureLocation
 FA_EXT = ".fa"
 GB_EXT = ".gb"
 # checking for genes with location +/- OVERLAP_MARGIN in nt
-TARGET_OFFSET = 500
+# TARGET_OFFSET = 500
 
-def gen_multi_fasta(in_f, genome_path, out, offset=TARGET_OFFSET):
+def gen_multi_fasta(in_f, genome_path, out, offset):
     res = pd.read_csv(in_f, sep='\t', index_col="accession.1")
     x = res.groupby('accession.1')
 
@@ -74,11 +74,13 @@ if __name__ == '__main__':
     argParser.add_argument("-i", "--input", help="model tsv result file", required=True)
     argParser.add_argument("-o", "--output", help="output filepath", required=True)
     argParser.add_argument("-g", "--genbank", help="genbank dir", required=True)
+    argParser.add_argument("-off", "--offset", help="sequence offset", default=500)
 
     args = argParser.parse_args()
     i = args.input
     o = args.output
     g = args.genbank
+    off = args.offset
     # i = "/storage/Documents/service/biologie/lafontaine/20230920_riboswitch_eukaryotes/all.found.taxid.test.tsv"
     # o = "/storage/Documents/service/biologie/lafontaine/20230920_riboswitch_eukaryotes/all.found.taxid.overlapping.tsv"
     # g = "/storage/Documents/service/biologie/lafontaine/20230920_riboswitch_eukaryotes/refgenomes_hits"
@@ -86,4 +88,4 @@ if __name__ == '__main__':
     # if os.path.exists(o):
     #     os.remove(o)
 
-    gen_multi_fasta(i, g, o)
+    gen_multi_fasta(i, g, o, off)
