@@ -4,6 +4,7 @@ import sys
 
 import pandas as pd
 from Bio import SeqIO
+from Bio.Seq import complement, reverse_complement
 from Bio.SeqFeature import FeatureLocation
 
 FA_EXT = ".fa"
@@ -65,7 +66,13 @@ def get_sequence(genome, start, end, offset):
     else:
         seq_end_idx = end + offset
 
-    return genome.seq[seq_start_idx:seq_end_idx]
+    if seq_start_idx < seq_end_idx:
+        # on +1 strand
+        seq = genome.seq[seq_start_idx:seq_end_idx]
+    else:
+        o_seq = genome.seq[seq_end_idx:seq_start_idx]
+        seq = reverse_complement(o_seq)
+    return seq
 
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
