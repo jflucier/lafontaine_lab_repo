@@ -44,9 +44,11 @@ def gen_multi_fasta(in_f, genome_path, out):
 
 def output_fa(out, all_seqs):
     with open(out, "w") as output:
+        c = 1
         for f in all_seqs:
-            print(">" + f['acc'], file=output)
+            print(">" + f['acc'] + "_" + str(c), file=output)
             print(f['seq'], file=output)
+            c = c + 1
 
 
 def get_sequence(genome, start, end):
