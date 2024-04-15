@@ -47,16 +47,24 @@ def output_features(genbank, acc, start, end, overlapping_feat, o):
         if len(overlapping_feat) > 0:
             for feature in overlapping_feat:
                 if 'gene' in feature["f"].qualifiers:
-                    g = feature["f"].qualifiers['gene']
+                    g = feature["f"].qualifiers['gene'][0]
                 elif 'locus_tag' in feature["f"].qualifiers:
-                    g = feature["f"].qualifiers['locus_tag']
+                    g = feature["f"].qualifiers['locus_tag'][0]
                 else:
                     print(f"key gene or locus_tag not found in feature: {feature}")
                     sys.exit(0)
-                xref = feature["f"].qualifiers['db_xref']
-                prod = feature["f"].qualifiers['product']
+                if 'product' in feature["f"].qualifiers:
+                    n = feature["f"].qualifiers['product'][0]
+                elif 'db_xref' in feature["f"].qualifiers:
+                    n = feature["f"].qualifiers['db_xref'][0]
+                elif 'note' in feature["f"].qualifiers:
+                    n = feature["f"].qualifiers['note'][0]
+                else:
+                    n = ""
+                # xref = feature["f"].qualifiers['db_xref']
+                # prod = feature["f"].qualifiers['product']
                 loc = feature["t"] + ":" + str(feature["f"].location.start) + "-" + str(feature["f"].location.end)
-                file1.write(f"{genbank}\t{acc}\t{start}\t{end}\t{g}\t{loc}\t{xref}\t{prod}\n")
+                file1.write(f"{genbank}\t{acc}\t{start}\t{end}\t{g}\t{loc}\t{n}\n")
         else:
             file1.write(f"{genbank}\t{acc}\t{start}\t{end}\t\t\t\n")
 
@@ -66,10 +74,11 @@ def find_features(genome, start, end):
     overlapping_features = []
     for feature in genome.features:
         # if feature.type == 'CDS' and feature.qualifiers['gene'][0] == 'ROBO2':
+        # print(f"{feature.qualifiers.get('gene')}")
         if feature.type == 'gene':
             # if isinstance(feature.location, CompoundLocation):
-            if feature.location.start - OVERLAP_MARGIN <= int(end) and feature.location.end + OVERLAP_MARGIN >= int(
-                    start):
+            #ENSAPOG00000001575.1
+            if feature.location.start - OVERLAP_MARGIN <= end and feature.location.end + OVERLAP_MARGIN >= start:
                 t = overlap_type(feature, start, end)
                 overlapping_features.append({
                     "f": feature,
@@ -97,8 +106,8 @@ if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
 
     # mandatory
-    argParser.add_argument("-s", "--start", help="model tsv result file", required=True)
-    argParser.add_argument("-e", "--end", help="output filepath", required=True)
+    argParser.add_argument("-s", "--start", help="model tsv result file", required=True, type=int)
+    argParser.add_argument("-e", "--end", help="output filepath", required=True, type=int)
     argParser.add_argument("-g", "--genbank", help="genbank dir", required=True)
     argParser.add_argument("-a", "--acc", help="accession", required=True)
     argParser.add_argument("-o", "--out", help="output file", required=True)
