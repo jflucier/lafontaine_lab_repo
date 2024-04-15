@@ -10,7 +10,8 @@ GB_EXT = ".gb"
 # checking for genes with location +/- OVERLAP_MARGIN in nt
 OVERLAP_MARGIN = 250
 
-def find_overlapping_features(start, end, genbank, acc):
+
+def find_overlapping_features(start, end, genbank, acc, o):
     if not os.path.exists(genbank):
         print(f"Genbank not found: {genbank}")
         sys.exit(0)
@@ -21,9 +22,9 @@ def find_overlapping_features(start, end, genbank, acc):
             if record.name != acc:
                 continue
 
-            print(f"{record.name} {acc}")
+            # print(f"{record.name} {acc}")
             overlapping_feat = find_features(record, start, end)
-            output_features(genbank, acc, start, end, overlapping_feat)
+            output_features(genbank, acc, start, end, overlapping_feat, o)
             break
         # genome = SeqIO.read(genbank, "genbank")
 
@@ -40,24 +41,24 @@ def find_overlapping_features(start, end, genbank, acc):
         # output_features(genbank,acc,start,end,overlapping_feat)
 
 
-def output_features(genbank,acc,start,end,overlapping_feat):
+def output_features(genbank, acc, start, end, overlapping_feat, o):
     # Print the overlapping features
-    if len(overlapping_feat) > 0:
-        for feature in overlapping_feat:
-            if 'gene' in feature["f"].qualifiers:
-                g = feature["f"].qualifiers['gene']
-            elif 'locus_tag' in feature["f"].qualifiers:
-                g = feature["f"].qualifiers['locus_tag']
-            else:
-                print(f"key gene or locus_tag not found in feature: {feature}")
-                sys.exit(0)
-            xref = feature["f"].qualifiers['db_xref']
-            prod = feature["f"].qualifiers['product']
-            loc = feature["t"] + ":" + str(feature["f"].location.start) + "-" + str(feature["f"].location.end)
-            print(f"{genbank}\t{acc}\t{start}\t{end}\t{g}\t{loc}\t{xref}\t{prod}\n")
-    else:
-        print(f"{genbank}\t{acc}\t{start}\t{end}\t\t\t\n")
-
+    with open(o, "a") as file1:
+        if len(overlapping_feat) > 0:
+            for feature in overlapping_feat:
+                if 'gene' in feature["f"].qualifiers:
+                    g = feature["f"].qualifiers['gene']
+                elif 'locus_tag' in feature["f"].qualifiers:
+                    g = feature["f"].qualifiers['locus_tag']
+                else:
+                    print(f"key gene or locus_tag not found in feature: {feature}")
+                    sys.exit(0)
+                xref = feature["f"].qualifiers['db_xref']
+                prod = feature["f"].qualifiers['product']
+                loc = feature["t"] + ":" + str(feature["f"].location.start) + "-" + str(feature["f"].location.end)
+                file1.write(f"{genbank}\t{acc}\t{start}\t{end}\t{g}\t{loc}\t{xref}\t{prod}\n")
+        else:
+            file1.write(f"{genbank}\t{acc}\t{start}\t{end}\t\t\t\n")
 
 
 def find_features(genome, start, end):
@@ -67,7 +68,8 @@ def find_features(genome, start, end):
         # if feature.type == 'CDS' and feature.qualifiers['gene'][0] == 'ROBO2':
         if feature.type == 'gene':
             # if isinstance(feature.location, CompoundLocation):
-            if feature.location.start - OVERLAP_MARGIN <= int(end) and feature.location.end + OVERLAP_MARGIN >= int(start):
+            if feature.location.start - OVERLAP_MARGIN <= int(end) and feature.location.end + OVERLAP_MARGIN >= int(
+                    start):
                 t = overlap_type(feature, start, end)
                 overlapping_features.append({
                     "f": feature,
@@ -75,6 +77,7 @@ def find_features(genome, start, end):
                 })
 
     return overlapping_features
+
 
 def overlap_type(feature, start, end):
     if feature.location.start - OVERLAP_MARGIN >= start < feature.location.start:
@@ -89,6 +92,7 @@ def overlap_type(feature, start, end):
 
         return 'intron'
 
+
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
 
@@ -97,14 +101,16 @@ if __name__ == '__main__':
     argParser.add_argument("-e", "--end", help="output filepath", required=True)
     argParser.add_argument("-g", "--genbank", help="genbank dir", required=True)
     argParser.add_argument("-a", "--acc", help="accession", required=True)
+    argParser.add_argument("-o", "--out", help="output file", required=True)
 
     args = argParser.parse_args()
     s = args.start
     e = args.end
     g = args.genbank
     a = args.acc
+    o = args.out
 
     # if os.path.exists(o):
     #     os.remove(o)
 
-    find_overlapping_features(s, e, g, a)
+    find_overlapping_features(s, e, g, a, o)
