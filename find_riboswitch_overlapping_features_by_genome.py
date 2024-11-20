@@ -45,7 +45,7 @@ def find_overlapping_features(in_f, out):
             # break
         all_feat = []
         for _, r in row.iterrows():
-            a = r['acc']
+            a = str(r['acc'])
 
             # if a in g_records:
             #     print(f"key {a} found")
