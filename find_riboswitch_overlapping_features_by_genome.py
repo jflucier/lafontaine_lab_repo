@@ -12,7 +12,9 @@ GB_EXT = ".gb"
 OVERLAP_MARGIN = 250
 
 def find_overlapping_features(in_f, out):
+    print(f"Reading input file: {in_f}")
     res = pd.read_csv(in_f, sep='\t', index_col=3, header=None, names=['start','end','acc','genome'])
+    print(f"Grouping by genome path")
     x = res.groupby('genome')
 
     counter = 1
