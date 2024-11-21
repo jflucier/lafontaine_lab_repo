@@ -52,12 +52,17 @@ def find_overlapping_features(in_f, out):
 
             start = r['start']
             end = r['end']
-            # gb_path = os.path.join(genome_path, a + GB_EXT)
 
-            overlapping_feat = find_features(g_records[a], start, end)
+            if end < start:
+                strand = -1
+            else:
+                strand = 1
+
+            overlapping_feat = find_features(g_records[a], start, end, strand)
             all_feat.append({
                 'start': start,
                 'end': end,
+                'strand': strand,
                 'gb': gb_path,
                 'acc': a,
                 'features': overlapping_feat
@@ -75,6 +80,7 @@ def output_features(out, all_feat):
             end = f['end']
             gb = f['gb']
             acc = f['acc']
+            strand = str(f['strand'])
             overlapping_feat = f['features']
             # Print the overlapping features
             if len(overlapping_feat) > 0:
@@ -92,19 +98,20 @@ def output_features(out, all_feat):
                     else:
                         prod = ''
                     loc = feature["t"] + ":" + str(feature["f"].location.start) + "-" + str(feature["f"].location.end)
-                    output.write(f"{gb}\t{acc}\t{start}\t{end}\t{g}\t{loc}\t{xref}\t{prod}\n")
+                    loc_strand = str(feature["f"].location.strand)
+                    output.write(f"{gb}\t{acc}\t{start}\t{end}\t{strand}\t{g}\t{loc}\t{loc_strand}\t{xref}\t{prod}\n")
             # else:
             #     output.write(f"{gb}\t{acc}\t{start}\t{end}\t\t\t\n")
 
 
-def find_features(genome, start, end):
+def find_features(genome, start, end, strand):
     # Find all features that overlap the range
     overlapping_features = []
     for feature in genome.features:
         # if feature.type == 'CDS' and feature.qualifiers['gene'][0] == 'ROBO2':
         if feature.type == 'CDS':
             # if isinstance(feature.location, CompoundLocation):
-            if feature.location.start - OVERLAP_MARGIN <= end and feature.location.end + OVERLAP_MARGIN >= start:
+            if feature.location.strand == strand and feature.location.start - OVERLAP_MARGIN <= end and feature.location.end + OVERLAP_MARGIN >= start:
                 t = overlap_type(feature, start, end)
                 overlapping_features.append({
                     "f": feature,
