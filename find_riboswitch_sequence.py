@@ -3,6 +3,7 @@ import argparse
 import sys
 import gzip
 import pyfastx
+import re
 
 import pandas as pd
 from Bio import SeqIO
@@ -14,7 +15,7 @@ GB_EXT = ".gb"
 # checking for genes with location +/- OVERLAP_MARGIN in nt
 # TARGET_OFFSET = 500
 
-def get_sequences(in_f, outpath):
+def get_sequences(in_f, outpath, genome_base):
     print(f"Reading input file: {in_f}")
 
     res = pd.read_csv(
@@ -28,12 +29,36 @@ def get_sequences(in_f, outpath):
 
     counter = 1
     out = []
-    for fa_path, row in x:
-        print(f"{counter}/{x.ngroups}: retreving sequences in {fa_path} hits")
+    for gb_path, row in x:
+        print(f"{counter}/{x.ngroups}: retreving sequences in {gb_path} hits")
         print(f"Total riboswitch to analyze: {len(row.index)}")
         counter += 1
+        if not os.path.exists(gb_path):
+            print(f"Genbank not found: {gb_path}")
+            sys.exit(0)
+
+        # try constructing fasta genome path
+        # from: /fast2/def-lafontai/ensembl_genomes/genbank/anas_platyrhynchos/Anas_platyrhynchos.ASM874695v1.111.primary_assembly.5.dat
+        # to: /fast2/def-lafontai/ensembl_genomes/fasta/anas_platyrhynchos/dna/Anas_platyrhynchos.ASM874695v1.dna.toplevel.fa
+        # or
+        # /fast2/def-lafontai/ensembl_genomes/fasta/anas_zonorhyncha/dna/Anas_zonorhyncha.ASM222487v1.dna.nonchromosomal.fa
+        sp = os.path.basename(os.path.dirname(gb_path))
+        base_fa_path = os.path.join(genome_base, "fasta", sp, "dna")
+        pattern = re.compile(".*.nonchromosomal.dat$")
+        if pattern.match(gb_path):
+            # nonchromosomal
+            fa_pattern = re.compile(".*.nonchromosomal.fa$")
+        else:
+            # toplevel
+            fa_pattern = re.compile(".*.toplevel.fa$")
+
+        for f in os.listdir(base_fa_path):
+            if fa_pattern.match(f):
+                fa_path = os.path.join(base_fa_path,f)
+                break
+
         if not os.path.exists(fa_path):
-            print(f"Genbank not found: {fa_path}")
+            print(f"Fasta not found: {fa_path}")
             sys.exit(0)
 
         # g_records = SeqIO.to_dict(SeqIO.parse(gb_path, "genbank"))
@@ -95,9 +120,11 @@ if __name__ == '__main__':
     # mandatory
     argParser.add_argument("-i", "--input", help="input tsv: genome_file<tab>chr<tab>start<tab>end<tab>strand<tab>loc<tab>loc_strand<tab>overlap_type<tab>gene<tab>xref<tab>prod", required=True)
     argParser.add_argument("-o", "--output", help="output filepath", required=True)
+    argParser.add_argument("-g", "--genome", help="base ensembl genome path filepath", required=True, default="/fast2/def-lafontai/ensembl_genomes/fasta")
 
     args = argParser.parse_args()
     i = args.input
     o = args.output
+    g = args.genome
 
-    get_sequences(i, o)
+    get_sequences(i, o, g)
