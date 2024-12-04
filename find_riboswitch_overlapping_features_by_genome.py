@@ -50,8 +50,8 @@ def find_overlapping_features(in_f, out):
             # if a in g_records:
             #     print(f"key {a} found")
 
-            start = r['start']
-            end = r['end']
+            start = int(r['start'])
+            end = int(r['end'])
 
             if end < start:
                 strand = -1
