@@ -59,7 +59,15 @@ def get_sequences(in_f, outpath, genome_base):
                 break
 
         if not os.path.exists(fa_path):
-            print(f"Fasta not found: {fa_path}")
+            print(f"Fasta not found. Falling back to toplevel file")
+            fa_pattern = re.compile(".*.toplevel.fa$")
+            for f in os.listdir(base_fa_path):
+                if fa_pattern.match(f):
+                    fa_path = os.path.join(base_fa_path, f)
+                    break
+
+        if not os.path.exists(fa_path):
+            print(f"Fasta not found!")
             sys.exit(0)
 
         # g_records = SeqIO.to_dict(SeqIO.parse(gb_path, "genbank"))
