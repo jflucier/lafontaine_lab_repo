@@ -52,7 +52,7 @@ def get_sequences(in_f, outpath, genome_base):
             # toplevel
             fa_pattern = re.compile(".*.toplevel.fa$")
 
-        fa_path = None
+        fa_path = ""
         for f in os.listdir(base_fa_path):
             if fa_pattern.match(f):
                 fa_path = os.path.join(base_fa_path,f)
