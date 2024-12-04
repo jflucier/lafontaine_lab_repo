@@ -92,7 +92,10 @@ def output_features(out, all_feat):
                     else:
                         print(f"key gene or locus_tag not found in feature: {feature}")
                         sys.exit(0)
-                    xref = feature["f"].qualifiers['db_xref']
+                    if 'db_xref' in feature["f"].qualifiers:
+                        xref = feature["f"].qualifiers['db_xref']
+                    else:
+                        xref = ''
                     if 'product' in feature["f"].qualifiers:
                         prod = feature["f"].qualifiers['product']
                     else:
