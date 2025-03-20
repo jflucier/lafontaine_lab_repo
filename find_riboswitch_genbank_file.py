@@ -53,6 +53,7 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
             for line in lines:
                 result = process_line(line, gb_path, file_index)
                 if result:
+                    print("outputting results to file")
                     outfile.write(result)
 
     except FileNotFoundError as e:
