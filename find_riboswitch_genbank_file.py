@@ -2,7 +2,7 @@ import os
 import re
 
 
-def find_genbank_file(gb_path, gen1, acc, file_index):
+def find_genbank_file(gen1, acc, file_index):
     """Finds a GenBank file using a pre-built index."""
     # key = f"{gen1}.*.{acc}.dat"
     pattern = re.compile(rf"^{gen1}\..*\.{acc}\.dat$", re.IGNORECASE)
@@ -12,7 +12,7 @@ def find_genbank_file(gb_path, gen1, acc, file_index):
             return filepath
     return None
 
-def find_nonchromosomal_file(gb_path, gen1, file_index):
+def find_nonchromosomal_file(gen1, file_index):
     """Finds a non-chromosomal GenBank file using regex."""
     pattern = re.compile(rf"^{gen1}\..*\.nonchromosomal\.dat$", re.IGNORECASE)  # Regex pattern
 
@@ -46,7 +46,7 @@ def build_file_index(gb_path):
             file_index[file] = os.path.join(root, file)
     return file_index
 
-def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
+def process_tsv_single_thread(gb_path, input_file, output_file):
     """Processes a TSV file in single thread."""
     file_index = build_file_index(gb_path)  # Build the index once
 
@@ -73,11 +73,11 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
 if __name__ == "__main__":
     rf_model = "RF00174.DDC1"  # Replace with your rf_model
     gb_path = "/fast2/def-lafontai/ensembl_genomes/genbank"
-    input_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.test.tsv"
+    input_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.tsv"
     output_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.out2.tsv"
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     if os.path.exists(output_file):
         os.remove(output_file)
 
-    process_tsv_single_thread(rf_model, gb_path, input_file, output_file)
+    process_tsv_single_thread(gb_path, input_file, output_file)
