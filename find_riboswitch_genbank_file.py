@@ -63,7 +63,7 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
 
 if __name__ == "__main__":
     rf_model = "RF00174.DDC1"  # Replace with your rf_model
-    gb_path = "/fast2/def-lafontai/ensembl_genomes/"
+    gb_path = "/fast2/def-lafontai/ensembl_genomes/genbank"
     input_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.test.tsv"
     output_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.out2.tsv"
 
