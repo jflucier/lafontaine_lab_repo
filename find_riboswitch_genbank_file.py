@@ -57,8 +57,8 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
             print(f"Processing {total_lines} lines.")
             line_nbr = 1
             for line in lines:
-                if line_nbr % 1000 == 0 or line_nbr==1:
-                    print(f"processing line: {line_nbr}".strip())  # strip to avoid extra newlines.
+                if line_nbr % 1000 == 0 or line_nbr==1 or line_nbr == total_lines:
+                    print(f"processing line: {line_nbr} / {total_lines}".strip())  # strip to avoid extra newlines.
                 result = process_line(line, gb_path, file_index)
                 if result:
                     outfile.write(result)
