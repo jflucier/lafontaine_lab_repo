@@ -1,17 +1,24 @@
 import os
+import re
+
 
 def find_genbank_file(gb_path, gen1, acc, file_index):
     """Finds a GenBank file using a pre-built index."""
-    key = f"{gen1}.*.{acc}.dat"
-    if key in file_index:
-        return file_index[key]
+    # key = f"{gen1}.*.{acc}.dat"
+    pattern = re.compile(rf"^{gen1}\..*\.{acc}\.dat$", re.IGNORECASE)
+
+    for filename, filepath in file_index.items():
+        if pattern.match(filename):
+            return filepath
     return None
 
 def find_nonchromosomal_file(gb_path, gen1, file_index):
-    """Finds a non-chromosomal GenBank file using a pre-built index."""
-    key = f"{gen1}.*.nonchromosomal.dat".lower()
-    if key in file_index:
-        return file_index[key]
+    """Finds a non-chromosomal GenBank file using regex."""
+    pattern = re.compile(rf"^{gen1}\..*\.nonchromosomal\.dat$", re.IGNORECASE)  # Regex pattern
+
+    for filename, filepath in file_index.items():
+        if pattern.match(filename):
+            return filepath
     return None
 
 def process_line(line, gb_path, file_index):
@@ -50,8 +57,9 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
             lines = infile.readlines()
             total_lines = len(lines)
             print(f"Processing {total_lines} lines.")
-
+            line_nbr = 1
             for line in lines:
+                print(f"procesisng line: {line}")
                 result = process_line(line, gb_path, file_index)
                 if result:
                     outfile.write(result)
