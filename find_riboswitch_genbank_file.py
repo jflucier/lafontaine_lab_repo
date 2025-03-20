@@ -29,7 +29,7 @@ def process_line(line, gb_path, file_index):
         acc = fields[2]
         s = fields[9]
         e = fields[10]
-        print(f"file_index: {file_index}")
+        # print(f"file_index: {file_index}")
         print(f"finding gb file using: {gb_path} - {gen1} - {acc}")
         g_file = find_genbank_file(gb_path, gen1, acc, file_index)
         if g_file:
@@ -61,6 +61,7 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
             for line in lines:
                 print(f"procesisng line: {line}")
                 result = process_line(line, gb_path, file_index)
+                print(f"xxxxxxxxxxxxxxxx")
                 if result:
                     outfile.write(result)
 
