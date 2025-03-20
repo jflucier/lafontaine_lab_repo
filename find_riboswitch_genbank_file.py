@@ -22,7 +22,8 @@ def process_line(line, gb_path, file_index):
         acc = fields[2]
         s = fields[9]
         e = fields[10]
-
+        print(f"file_index: {file_index}")
+        print(f"finding gb file using: {gb_path} - {gen1} - {acc}")
         g_file = find_genbank_file(gb_path, gen1, acc, file_index)
         if g_file:
             return f"{s}\t{e}\t{acc}\t{g_file}\n"
@@ -53,7 +54,6 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
             for line in lines:
                 result = process_line(line, gb_path, file_index)
                 if result:
-                    print("outputting results to file")
                     outfile.write(result)
 
     except FileNotFoundError as e:
