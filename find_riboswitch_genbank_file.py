@@ -57,7 +57,7 @@ def find_nonchromosomal_file(gb_path, gen1):
 if __name__ == "__main__":
     rf_model = "RF00174.DDC1"  # Replace with your rf_model
     gb_path = "/fast2/def-lafontai/ensembl_genomes/"
-    input_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.tsv"
+    input_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.test.tsv"
     output_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.out2.tsv"
 
     os.makedirs(os.path.dirname(output_file), exist_ok=True) #create output directory if it does not exist.
