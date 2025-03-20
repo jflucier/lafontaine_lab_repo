@@ -1,10 +1,11 @@
 import os
 import re
-
+import multiprocessing
+from functools import partial
+from tqdm import tqdm
 
 def find_genbank_file(gen1, acc, file_index):
     """Finds a GenBank file using a pre-built index."""
-    # key = f"{gen1}.*.{acc}.dat"
     pattern = re.compile(rf"^{gen1}\..*\.{acc}\.dat$", re.IGNORECASE)
 
     for filename, filepath in file_index.items():
@@ -14,7 +15,7 @@ def find_genbank_file(gen1, acc, file_index):
 
 def find_nonchromosomal_file(gen1, file_index):
     """Finds a non-chromosomal GenBank file using regex."""
-    pattern = re.compile(rf"^{gen1}\..*\.nonchromosomal\.dat$", re.IGNORECASE)  # Regex pattern
+    pattern = re.compile(rf"^{gen1}\..*\.nonchromosomal\.dat$", re.IGNORECASE)
 
     for filename, filepath in file_index.items():
         if pattern.match(filename):
@@ -46,24 +47,22 @@ def build_file_index(gb_path):
             file_index[file] = os.path.join(root, file)
     return file_index
 
-def process_tsv_single_thread(gb_path, input_file, output_file):
-    """Processes a TSV file in single thread."""
-    file_index = build_file_index(gb_path)  # Build the index once
+def process_tsv_parallel(gb_path, input_file, output_file, num_processes=4):
+    """Processes a TSV file in parallel with a progress bar and specified number of processes."""
+    file_index = build_file_index(gb_path)
 
     try:
         with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
             lines = infile.readlines()
             total_lines = len(lines)
-            print(f"Processing {total_lines} lines.")
-            line_nbr = 1
-            for line in lines:
-                if line_nbr % 1000 == 0 or line_nbr==1 or line_nbr == total_lines:
-                    print(f"processing line: {line_nbr} / {total_lines}".strip())  # strip to avoid extra newlines.
-                result = process_line(line, gb_path, file_index)
+            print(f"Processing {total_lines} lines using {num_processes} processes.")
+
+            with multiprocessing.Pool(processes=num_processes) as pool:
+                results = list(tqdm(pool.imap(partial(process_line, gb_path=gb_path, file_index=file_index), lines), total=total_lines))
+
+            for result in results:
                 if result:
                     outfile.write(result)
-
-                line_nbr += 1
 
     except FileNotFoundError as e:
         print(f"Error: File not found: {e}")
@@ -80,4 +79,4 @@ if __name__ == "__main__":
     if os.path.exists(output_file):
         os.remove(output_file)
 
-    process_tsv_single_thread(gb_path, input_file, output_file)
+    process_tsv_parallel(gb_path, input_file, output_file)
