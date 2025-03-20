@@ -42,6 +42,7 @@ def find_genbank_file(gb_path, gen1, acc):
     """Finds a GenBank file based on genome and accession."""
     for root, _, files in os.walk(gb_path):
         for file in files:
+            print(f"gen1={gen1}, acc={acc}, file={file}")
             if file == f"{gen1}.*.{acc}.dat":
                 return os.path.join(root, file)
     return None
