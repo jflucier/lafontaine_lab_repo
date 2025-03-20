@@ -61,7 +61,7 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
             for line in lines:
                 print(f"procesisng line: {line}")
                 result = process_line(line, gb_path, file_index)
-                print(f"xxxxxxxxxxxxxxxx")
+                print(f"res={result}")
                 if result:
                     outfile.write(result)
 
