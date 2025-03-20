@@ -63,6 +63,8 @@ def process_tsv_single_thread(rf_model, gb_path, input_file, output_file):
                 if result:
                     outfile.write(result)
 
+                line_nbr += 1
+
     except FileNotFoundError as e:
         print(f"Error: File not found: {e}")
     except Exception as e:
