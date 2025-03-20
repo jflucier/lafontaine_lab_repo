@@ -29,11 +29,11 @@ def process_line(line, gb_path, file_index):
         acc = fields[2]
         s = fields[9]
         e = fields[10]
-        g_file = find_genbank_file(gb_path, gen1, acc, file_index)
+        g_file = find_genbank_file(gen1, acc, file_index)
         if g_file:
             return f"{s}\t{e}\t{acc}\t{g_file}\n"
 
-        g_file = find_nonchromosomal_file(gb_path, gen1, file_index)
+        g_file = find_nonchromosomal_file(gen1, file_index)
         if g_file:
             return f"{s}\t{e}\t{acc}\t{g_file}\n"
     return None
