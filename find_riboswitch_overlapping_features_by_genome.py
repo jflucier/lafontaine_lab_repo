@@ -18,6 +18,7 @@ def find_overlapping_features(in_f, out):
     x = res.groupby('genome')
 
     counter = 1
+    prev_gb_path = ""
     for gb_path, row in x:
         print(f"{counter}/{x.ngroups}: Finding overlapping features for {gb_path} hits")
         print(f"Total riboswitch to analyze: {len(row.index)}")
@@ -25,30 +26,18 @@ def find_overlapping_features(in_f, out):
         if not os.path.exists(gb_path):
             print(f"Genbank not found: {gb_path}")
             sys.exit(0)
-        # else:
-        #     print(f"Genbank found: {gb_path}")
 
-        # genome = SeqIO.read(gb_path, "genbank")
+        if prev_gb_path != gb_path:
+            print(f"Loading genome in memory: {gb_path}")
+            g_records = {}
+            for record in SeqIO.parse(gb_path, "genbank"):
+                # print(record.accession)
+                g_records[record.name] = record
+            prev_gb_path = gb_path
 
-        # g_records = SeqIO.to_dict(SeqIO.parse(gb_path, "genbank"))
-        print(f"Loading genome in memory: {gb_path}")
-        g_records = {}
-        for record in SeqIO.parse(gb_path, "genbank"):
-            # print(record.accession)
-            g_records[record.name] = record
-
-        # for k in g_records.keys():
-        #     print(k)
-            # print(f"{record.name} {acc}")
-            # overlapping_feat = find_features(record, start, end)
-            # output_features(genbank, acc, start, end, overlapping_feat, o)
-            # break
         all_feat = []
         for _, r in row.iterrows():
             a = str(r['acc'])
-
-            # if a in g_records:
-            #     print(f"key {a} found")
 
             start = int(r['start'])
             end = int(r['end'])
@@ -103,17 +92,13 @@ def output_features(out, all_feat):
                     loc = feature["t"] + ":" + str(feature["f"].location.start) + "-" + str(feature["f"].location.end)
                     loc_strand = str(feature["f"].location.strand)
                     output.write(f"{gb}\t{acc}\t{start}\t{end}\t{strand}\t{g}\t{loc}\t{loc_strand}\t{xref}\t{prod}\n")
-            # else:
-            #     output.write(f"{gb}\t{acc}\t{start}\t{end}\t\t\t\n")
 
 
 def find_features(genome, start, end, strand):
     # Find all features that overlap the range
     overlapping_features = []
     for feature in genome.features:
-        # if feature.type == 'CDS' and feature.qualifiers['gene'][0] == 'ROBO2':
         if feature.type == 'CDS':
-            # if isinstance(feature.location, CompoundLocation):
             if feature.location.strand == strand and feature.location.start - OVERLAP_MARGIN <= end and feature.location.end + OVERLAP_MARGIN >= start:
                 t = overlap_type(feature, start, end)
                 overlapping_features.append({

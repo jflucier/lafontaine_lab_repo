@@ -1,3 +1,4 @@
+import argparse
 import os
 import re
 import multiprocessing
@@ -70,13 +71,17 @@ def process_tsv_parallel(gb_path, input_file, output_file, num_processes=4):
         print(f"An error occurred: {e}")
 
 if __name__ == "__main__":
-    rf_model = "RF00174.DDC1"  # Replace with your rf_model
-    gb_path = "/fast2/def-lafontai/ensembl_genomes/genbank"
-    input_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.tsv"
-    output_file = f"/fast2/def-lafontai/rf_run2/infernal/ensembl_genomes/{rf_model}.sp.out2.tsv"
+    parser = argparse.ArgumentParser(description="Process TSV files and find corresponding GenBank files.")
+    parser.add_argument("--rf_model", help="The RF model name.")
+    parser.add_argument("--gb_path", help="The path to the GenBank directory.")
+    parser.add_argument("--input_file", help="The input TSV file path.")
+    parser.add_argument("--output_file", help="The output TSV file path.")
+    parser.add_argument("--num_processes", type=int, default=4, help="Number of processes to use (default: 4).")
 
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    if os.path.exists(output_file):
-        os.remove(output_file)
+    args = parser.parse_args()
 
-    process_tsv_parallel(gb_path, input_file, output_file)
+    os.makedirs(os.path.dirname(args.output_file), exist_ok=True)
+    if os.path.exists(args.output_file):
+        os.remove(args.output_file)
+
+    process_tsv_parallel(args.gb_path, args.input_file, args.output_file, args.num_processes)
