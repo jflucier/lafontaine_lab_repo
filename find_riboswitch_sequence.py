@@ -53,9 +53,12 @@ def get_sequences(in_f, outpath, genome_base):
             fa_pattern = re.compile(".*.toplevel.fa.gz$")
 
         fa_path = ""
-        for f in os.listdir(base_fa_path):
-            if fa_pattern.match(f):
-                fa_path = os.path.join(base_fa_path,f)
+        for root, dirs, files in os.walk(base_fa_path):
+            for f in files:
+                if fa_pattern.match(f):
+                    fa_path = os.path.join(root, f)
+                    break  # Break out of the inner loop (files)
+            if fa_path:  # If fa_path was found, break out of the outer loop (os.walk)
                 break
 
         if not os.path.exists(fa_path):
