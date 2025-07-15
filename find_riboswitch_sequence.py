@@ -29,6 +29,8 @@ def get_sequences(in_f, outpath, genome_base):
 
     counter = 1
     out = []
+    genbank_dir_marker = os.path.join("genbank", "genbank")  # Ensures cross-OS compatibility
+
     for gb_path, row in x:
         print(f"{counter}/{x.ngroups}: retreving sequences in {gb_path} hits")
         print(f"Total riboswitch to analyze: {len(row.index)}")
@@ -38,12 +40,26 @@ def get_sequences(in_f, outpath, genome_base):
             sys.exit(0)
 
         # try constructing fasta genome path
+        # Use rsplit to split from the right, ensuring we get the correct last occurrence
+        path_parts_split_by_genbank = gb_path.rsplit(genbank_dir_marker, 1)
+        if len(path_parts_split_by_genbank) != 2:
+            print(f"Error: Expected '{genbank_dir_marker}' not found or in unexpected place in path: {gb_path}")
+            return None
+
+        common_root_prefix = path_parts_split_by_genbank[0]  # e.g., "/fast2/def-lafontai/ensembl_protists/release-61/"
+        specie_path = path_parts_split_by_genbank[1]
+
+        species_dir = os.path.basename(os.path.dirname(gb_path))
+
+        base_fa_path = os.path.join(species_dir, "fasta", "fasta", species_dir, "dna")
+
         # from: /fast2/def-lafontai/ensembl_genomes/genbank/anas_platyrhynchos/Anas_platyrhynchos.ASM874695v1.111.primary_assembly.5.dat
         # to: /fast2/def-lafontai/ensembl_genomes/fasta/anas_platyrhynchos/dna/Anas_platyrhynchos.ASM874695v1.dna.toplevel.fa
         # or
         # /fast2/def-lafontai/ensembl_genomes/fasta/anas_zonorhyncha/dna/Anas_zonorhyncha.ASM222487v1.dna.nonchromosomal.fa
-        sp = os.path.basename(os.path.dirname(gb_path))
-        base_fa_path = os.path.join(genome_base, sp, "dna")
+
+        # sp = os.path.basename(os.path.dirname(gb_path))
+        # base_fa_path = os.path.join(genome_base, sp, "dna")
         print(f"base fa path: {base_fa_path}")
         pattern = re.compile(".*.nonchromosomal.dat.gz$")
         if pattern.match(gb_path):
