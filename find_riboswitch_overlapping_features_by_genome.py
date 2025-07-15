@@ -56,6 +56,11 @@ def find_overlapping_features(in_f, out):
         for _, r in row.iterrows():
             a = str(r['acc'])
 
+            current_record = g_records_map.get(a)  # Safely get the record
+            if current_record is None:
+                print(f"Accession/Name '{a}' not found in loaded GenBank '{gb_path}'. Skipping.")
+                continue
+
             start = int(r['start'])
             end = int(r['end'])
 
@@ -64,7 +69,7 @@ def find_overlapping_features(in_f, out):
             else:
                 strand = 1
 
-            overlapping_feat = find_features(g_records_map[a], start, end, strand)
+            overlapping_feat = find_features(current_record, start, end, strand)
             all_feat.append({
                 'start': start,
                 'end': end,
