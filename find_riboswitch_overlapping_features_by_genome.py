@@ -1,3 +1,4 @@
+import gzip
 import os
 import argparse
 import sys
@@ -29,11 +30,21 @@ def find_overlapping_features(in_f, out):
 
         if prev_gb_path != gb_path:
             print(f"Loading genome in memory: {gb_path}")
-            g_records = {}
-            for record in SeqIO.parse(gb_path, "genbank"):
-                # print(record.accession)
-                g_records[record.name] = record
-            prev_gb_path = gb_path
+            g_records = {}  # Clear previous records
+            try:
+                # Check if the file is gzipped and open accordingly
+                if gb_path.endswith('.gz'):
+                    with gzip.open(gb_path, "rt") as handle:  # 'rt' for read text mode
+                        for record in SeqIO.parse(handle, "genbank"):
+                            g_records[record.id] = record
+                else:
+                    with open(gb_path, "r") as handle:
+                        for record in SeqIO.parse(handle, "genbank"):
+                            g_records[record.id] = record
+                prev_gb_path = gb_path
+            except Exception as e:
+                print(f"Error parsing Genbank file {gb_path}: {e}. Skipping this genome.")
+                continue
 
         all_feat = []
         for _, r in row.iterrows():
@@ -132,11 +143,6 @@ if __name__ == '__main__':
     args = argParser.parse_args()
     i = args.input
     o = args.output
-    # g = args.genbank
-    # i = "/storage/Documents/service/biologie/lafontaine/20230920_riboswitch_eukaryotes/all.found.taxid.test.tsv"
-    # o = "/storage/Documents/service/biologie/lafontaine/20230920_riboswitch_eukaryotes/all.found.taxid.overlapping.tsv"
-    # g = "/storage/Documents/service/biologie/lafontaine/20230920_riboswitch_eukaryotes/refgenomes_hits"
-
     if os.path.exists(o):
         os.remove(o)
 
