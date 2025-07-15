@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 def find_genbank_file(gen1, acc, file_index):
     """Finds a GenBank file using a pre-built index."""
-    pattern = re.compile(rf"^{gen1}\..*\.{acc}\.dat$", re.IGNORECASE)
+    pattern = re.compile(rf"^{gen1}\..*\.{acc}\.dat.gz$", re.IGNORECASE)
 
     for filename, filepath in file_index.items():
         if pattern.match(filename):
@@ -16,7 +16,7 @@ def find_genbank_file(gen1, acc, file_index):
 
 def find_nonchromosomal_file(gen1, file_index):
     """Finds a non-chromosomal GenBank file using regex."""
-    pattern = re.compile(rf"^{gen1}\..*\.nonchromosomal\.dat$", re.IGNORECASE)
+    pattern = re.compile(rf"^{gen1}\..*\.nonchromosomal\.dat.gz$", re.IGNORECASE)
 
     for filename, filepath in file_index.items():
         if pattern.match(filename):
