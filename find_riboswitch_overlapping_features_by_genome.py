@@ -64,7 +64,7 @@ def find_overlapping_features(in_f, out):
             else:
                 strand = 1
 
-            overlapping_feat = find_features(g_records[a], start, end, strand)
+            overlapping_feat = find_features(g_records_map[a], start, end, strand)
             all_feat.append({
                 'start': start,
                 'end': end,
