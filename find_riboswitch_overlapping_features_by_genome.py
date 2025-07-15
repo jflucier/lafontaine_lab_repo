@@ -36,6 +36,7 @@ def find_overlapping_features(in_f, out):
                 if gb_path.endswith('.gz'):
                     with gzip.open(gb_path, "rt") as handle:  # 'rt' for read text mode
                         for record in SeqIO.parse(handle, "genbank"):
+                            print(f"{record.id}")
                             g_records[record.id] = record
                 else:
                     with open(gb_path, "r") as handle:
