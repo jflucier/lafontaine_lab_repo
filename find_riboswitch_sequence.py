@@ -44,6 +44,7 @@ def get_sequences(in_f, outpath, genome_base):
         # /fast2/def-lafontai/ensembl_genomes/fasta/anas_zonorhyncha/dna/Anas_zonorhyncha.ASM222487v1.dna.nonchromosomal.fa
         sp = os.path.basename(os.path.dirname(gb_path))
         base_fa_path = os.path.join(genome_base, sp, "dna")
+        print(f"base fa path: {base_fa_path}")
         pattern = re.compile(".*.nonchromosomal.dat.gz$")
         if pattern.match(gb_path):
             # nonchromosomal
