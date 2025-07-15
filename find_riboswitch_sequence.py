@@ -44,13 +44,13 @@ def get_sequences(in_f, outpath, genome_base):
         # /fast2/def-lafontai/ensembl_genomes/fasta/anas_zonorhyncha/dna/Anas_zonorhyncha.ASM222487v1.dna.nonchromosomal.fa
         sp = os.path.basename(os.path.dirname(gb_path))
         base_fa_path = os.path.join(genome_base, sp, "dna")
-        pattern = re.compile(".*.nonchromosomal.dat$")
+        pattern = re.compile(".*.nonchromosomal.dat.gz$")
         if pattern.match(gb_path):
             # nonchromosomal
-            fa_pattern = re.compile(".*.nonchromosomal.fa$")
+            fa_pattern = re.compile(".*.nonchromosomal.fa.gz$")
         else:
             # toplevel
-            fa_pattern = re.compile(".*.toplevel.fa$")
+            fa_pattern = re.compile(".*.toplevel.fa.gz$")
 
         fa_path = ""
         for f in os.listdir(base_fa_path):
@@ -60,7 +60,7 @@ def get_sequences(in_f, outpath, genome_base):
 
         if not os.path.exists(fa_path):
             print(f"Fasta not found. Falling back to toplevel file")
-            fa_pattern = re.compile(".*.toplevel.fa$")
+            fa_pattern = re.compile(".*.toplevel.fa.gz$")
             for f in os.listdir(base_fa_path):
                 if fa_pattern.match(f):
                     fa_path = os.path.join(base_fa_path, f)
