@@ -47,7 +47,7 @@ def get_sequences(in_f, outpath, genome_base):
             return None
 
         common_root_prefix = path_parts_split_by_genbank[0]  # e.g., "/fast2/def-lafontai/ensembl_protists/release-61/"
-        specie_path = path_parts_split_by_genbank[1]
+        specie_path = path_parts_split_by_genbank[1].lstrip('/')
         species_dir = os.path.dirname(specie_path)
 
         print(f"gb_path={gb_path}")
