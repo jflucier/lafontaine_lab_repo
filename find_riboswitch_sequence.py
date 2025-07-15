@@ -49,9 +49,9 @@ def get_sequences(in_f, outpath, genome_base):
         common_root_prefix = path_parts_split_by_genbank[0]  # e.g., "/fast2/def-lafontai/ensembl_protists/release-61/"
         specie_path = path_parts_split_by_genbank[1]
 
-        species_dir = os.path.basename(os.path.dirname(gb_path))
+        # species_dir = os.path.basename(os.path.dirname(gb_path))
 
-        base_fa_path = os.path.join(common_root_prefix, "fasta", "fasta", species_dir, "dna")
+        base_fa_path = os.path.join(common_root_prefix, "fasta", "fasta", specie_path, "dna")
 
         # from: /fast2/def-lafontai/ensembl_genomes/genbank/anas_platyrhynchos/Anas_platyrhynchos.ASM874695v1.111.primary_assembly.5.dat
         # to: /fast2/def-lafontai/ensembl_genomes/fasta/anas_platyrhynchos/dna/Anas_platyrhynchos.ASM874695v1.dna.toplevel.fa
