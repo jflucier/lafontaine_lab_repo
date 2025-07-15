@@ -60,7 +60,7 @@ def get_sequences(in_f, outpath, genome_base):
 
         if not os.path.exists(fa_path):
             print(f"Fasta not found. Falling back to toplevel file")
-            # fa_pattern = re.compile(".*.toplevel.fa.gz$")
+            fa_pattern = re.compile(".*.toplevel.fa.gz$")
             for root, dirs, files in os.walk(base_fa_path):
                 for f in files:
                     if fa_pattern.match(f):
