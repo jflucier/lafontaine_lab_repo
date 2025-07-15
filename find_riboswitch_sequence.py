@@ -48,8 +48,13 @@ def get_sequences(in_f, outpath, genome_base):
 
         common_root_prefix = path_parts_split_by_genbank[0]  # e.g., "/fast2/def-lafontai/ensembl_protists/release-61/"
         specie_path = path_parts_split_by_genbank[1]
-
         species_dir = os.path.basename(os.path.dirname(specie_path))
+
+        print(f"gb_path={gb_path}")
+        print(f"common_root_prefix={common_root_prefix}")
+        print(f"specie_path={specie_path}")
+        print(f"species_dir={species_dir}")
+
 
         base_fa_path = os.path.join(common_root_prefix, "fasta", "fasta", species_dir, "dna")
 
