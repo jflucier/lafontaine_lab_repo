@@ -30,18 +30,23 @@ def find_overlapping_features(in_f, out):
 
         if prev_gb_path != gb_path:
             print(f"Loading genome in memory: {gb_path}")
-            g_records = {}  # Clear previous records
+            g_records_map = {}  # Clear previous records
             try:
                 # Check if the file is gzipped and open accordingly
                 if gb_path.endswith('.gz'):
                     with gzip.open(gb_path, "rt") as handle:  # 'rt' for read text mode
                         for record in SeqIO.parse(handle, "genbank"):
-                            print(f"{record}")
-                            g_records[record.id] = record
+                            if record.id:
+                                g_records_map[record.id] = record
+                            if record.name and record.name != record.id:
+                                g_records_map[record.name] = record
                 else:
                     with open(gb_path, "r") as handle:
                         for record in SeqIO.parse(handle, "genbank"):
-                            g_records[record.id] = record
+                            if record.id:
+                                g_records_map[record.id] = record
+                            if record.name and record.name != record.id:
+                                g_records_map[record.name] = record
                 prev_gb_path = gb_path
             except Exception as e:
                 print(f"Error parsing Genbank file {gb_path}: {e}. Skipping this genome.")
