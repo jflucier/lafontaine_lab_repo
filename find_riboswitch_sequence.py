@@ -51,7 +51,7 @@ def get_sequences(in_f, outpath, genome_base):
 
         species_dir = os.path.basename(os.path.dirname(gb_path))
 
-        base_fa_path = os.path.join(species_dir, "fasta", "fasta", species_dir, "dna")
+        base_fa_path = os.path.join(common_root_prefix, "fasta", "fasta", species_dir, "dna")
 
         # from: /fast2/def-lafontai/ensembl_genomes/genbank/anas_platyrhynchos/Anas_platyrhynchos.ASM874695v1.111.primary_assembly.5.dat
         # to: /fast2/def-lafontai/ensembl_genomes/fasta/anas_platyrhynchos/dna/Anas_platyrhynchos.ASM874695v1.dna.toplevel.fa
