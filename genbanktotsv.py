@@ -1,5 +1,6 @@
 import re
 import gzip
+import sys
 
 
 def parse_genbank_for_genes(genbank_content):
@@ -66,21 +67,26 @@ def parse_genbank_for_genes(genbank_content):
     return gene_data
 
 
-# Define the input file name
-gz_file_name = "Zeugodacus_cucurbitae_gca028554725v2rs.idZeuCucr1.2.61.primary_assembly.NC_016056.1.dat.gz"
-output_tsv_name = "output.tsv"
+# Check if the correct number of command-line arguments are provided
+if len(sys.argv) != 3:
+    print("Usage: python genbanktotsv.py <input_gz_file> <output_tsv_file>")
+    sys.exit(1)
+
+# Get file names from command-line arguments
+gz_file_name = sys.argv[1]
+output_tsv_name = sys.argv[2]
 
 # Read the content from the .gz file
 try:
     with gzip.open(gz_file_name, 'rt', encoding='utf-8') as f:
         file_content = f.read()
 except FileNotFoundError:
-    print(f"Error: The file '{gz_file_name}' was not found.")
-    print("Please make sure the .gz file is in the same directory as the script, or provide the full path to the file.")
-    exit()
+    print(f"Error: The input file '{gz_file_name}' was not found.")
+    print("Please make sure the .gz file exists and the path is correct.")
+    sys.exit(1)
 except Exception as e:
     print(f"An error occurred while reading the file: {e}")
-    exit()
+    sys.exit(1)
 
 # Parse the content
 extracted_genes = parse_genbank_for_genes(file_content)
