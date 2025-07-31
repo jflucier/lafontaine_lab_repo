@@ -1,6 +1,7 @@
 import re
 import gzip
 import sys
+import os  # Import the os module
 
 
 def parse_genbank_for_genes(genbank_content):
@@ -69,12 +70,15 @@ def parse_genbank_for_genes(genbank_content):
 
 # Check if the correct number of command-line arguments are provided
 if len(sys.argv) != 3:
-    print("Usage: python genbanktotsv.py <input_gz_file> <output_tsv_file>")
+    print("Usage: python your_script_name.py <input_gz_file> <output_tsv_file>")
     sys.exit(1)
 
 # Get file names from command-line arguments
 gz_file_name = sys.argv[1]
 output_tsv_name = sys.argv[2]
+
+# Print the absolute path the script is trying to open
+print(f"Attempting to open: {os.path.abspath(gz_file_name)}")
 
 # Read the content from the .gz file
 try:
@@ -82,7 +86,7 @@ try:
         file_content = f.read()
 except FileNotFoundError:
     print(f"Error: The input file '{gz_file_name}' was not found.")
-    print("Please make sure the .gz file exists and the path is correct.")
+    print("Please make sure the .gz file exists and the path is correct relative to your current working directory.")
     sys.exit(1)
 except Exception as e:
     print(f"An error occurred while reading the file: {e}")
