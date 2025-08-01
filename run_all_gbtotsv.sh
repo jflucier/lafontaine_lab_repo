@@ -1,16 +1,16 @@
 #!/bin/bash
 
 # Check for the correct number of command-line arguments
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 2 ]; then
     echo "Usage: $0 <GENBANK_DIR> <TSV_DIR> <PYTHON_SCRIPT>"
-    echo "Example: $0 /path/to/genbank/ /path/to/tsv/ /path/to/script.py"
+    echo "Example: $0 /path/to/genbank/ /path/to/tsv/"
     exit 1
 fi
 
 # Assign command-line arguments to variables
 GENBANK_DIR="$1"
 TSV_DIR="$2"
-PYTHON_SCRIPT="$3"
+PYTHON_SCRIPT="/home/def-lafontai/programs/lafontaine_lab_repo/genbanktotsv.py"
 
 # Print the paths that will be used
 echo "GenBank Directory: $GENBANK_DIR"
