@@ -5,7 +5,8 @@ fasta_path=""
 gb_path=""
 gene_info=""
 model_path=""
-TEMP=$(getopt -o b:f:g:i:m: --long base:,fa:,gb:,gene:,model: -n 'rbs_submit.slurm' -- "$@")
+cmsearch=""
+TEMP=$(getopt -o b:f:g:i:m:c: --long base:,fa:,gb:,gene:,model:,cm: -n 'rbs_submit.slurm' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -16,6 +17,7 @@ while true ; do
         -g|--gb) gb_path="$2" ; shift 2 ;;
         -i|--gene) gene_info="$2" ; shift 2 ;;
         -m|--model) model_path="$2" ; shift 2 ;;
+        -c|--cm) cm="$2" ; shift 2 ;;
         --) shift ; break ;;
         *) echo "Invalid Option" ; exit 1 ;;
     esac
@@ -27,7 +29,7 @@ echo "FA_PATH: ${fasta_path}"
 echo "GB_PATH: ${gb_path}"
 echo "GENE_INFO: ${gene_info}"
 echo "MODEL_PATH: ${model_path}"
-
+echo "CMSEARCH: ${cm}"
 
 #basepath=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2
 #fasta_path=/fast2/def-lafontai/ensembl_metazoa/release-61/fasta/fasta/
@@ -61,7 +63,7 @@ find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" -print0
     echo "##### $COUNTER/${total}: running cmsearch on ${gf}"
     zcat $g > ${fasta_path}/${gf}
 
-    /home/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch \
+    ${cm} \
     --cpu 24 --notrunc -E 0.1 \
     -o ${outpath}/${gf}.${rf_model}.out \
     --tblout ${outpath}/${gf}.${rf_model}.tbl --fmt 3 \
