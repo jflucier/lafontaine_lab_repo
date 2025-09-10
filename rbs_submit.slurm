@@ -35,11 +35,11 @@ done
 if [[ "${ENV}" == "mp2" ]]; then
   echo "activating mp2 env"
   source /net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/venv_mp2/bin/activate
-  SCRIPT_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.ip34.sh"
+  SCRIPT_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.sh"
 else
   echo "activating ip34 env"
   source /home/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
-  SCRIPT_PATH="/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.ip34.sh"
+  SCRIPT_PATH="/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.sh"
 fi
 
 sh ${SCRIPT_PATH} \

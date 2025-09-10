@@ -1,29 +1,43 @@
 #!/bin/bash
-#SBATCH --mail-type=END,FAIL
-#SBATCH -D /net/nfs-ip34/fast2/def-lafontai/rf_run2
-#SBATCH -o /net/nfs-ip34/fast2/def-lafontai/rf_run2.1log/rf_euk-%A_%a.slurm.out
-#SBATCH --time=24:00:00
-#SBATCH --mem=10G
-#SBATCH -N 1
-#SBATCH -n 24
-#SBATCH -A def-lafontai
-#SBATCH -J rf_euk
+#source /home/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
+basepath=""
+fasta_path=""
+gb_path=""
+gene_info=""
+model_path=""
+TEMP=$(getopt -o b:f:g:i:m: --long base:,fa:,gb:,gene:,model: -n 'rbs_submit.slurm' -- "$@")
 
-# make sure genomes are available
-#cp ../ensembl_genomes/fasta/*/dna/*.fa.gz
+eval set -- "$TEMP"
 
-#module purge && module load python/3.10.2 sqlite/3.43.1
-source /home/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
+while true ; do
+    case "$1" in
+        -b|--base) basepath="$2" ; shift 2 ;;
+        -f|--fa) fasta_path="$2" ; shift 2 ;;
+        -g|--gb) gb_path="$2" ; shift 2 ;;
+        -i|--gene) gene_info="$2" ; shift 2 ;;
+        -m|--model) model_path="$2" ; shift 2 ;;
+        --) shift ; break ;;
+        *) echo "Invalid Option" ; exit 1 ;;
+    esac
+done
 
-basepath=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2
-fasta_path=/fast2/def-lafontai/ensembl_metazoa/release-61/fasta/fasta/
-gb_path=/fast2/def-lafontai/ensembl_metazoa/release-61/genbank/genbank/
-gene_info=/fast2/def-lafontai/ensembl_metazoa/release-61/gene_info.sqlite
-model_path=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2/updated_models
+echo "Running the riboswitch pipeline"
+echo "BASE_PATH: ${basepath}"
+echo "FA_PATH: ${fasta_path}"
+echo "GB_PATH: ${gb_path}"
+echo "GENE_INFO: ${gene_info}"
+echo "MODEL_PATH: ${model_path}"
+
+
+#basepath=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2
+#fasta_path=/fast2/def-lafontai/ensembl_metazoa/release-61/fasta/fasta/
+#gb_path=/fast2/def-lafontai/ensembl_metazoa/release-61/genbank/genbank/
+#gene_info=/fast2/def-lafontai/ensembl_metazoa/release-61/gene_info.sqlite
+#model_path=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2/updated_models
 
 cd ${basepath}
 
-export rf_model_path=$(ls ${model_path}/*.cm | awk "NR==$SLURM_ARRAY_TASK_ID")
+export rf_model_path=${model_path}
 export rf_model_file=$(basename $rf_model_path)
 export rf_model="${rf_model_file%.cm}"
 export db_rf_model="${rf_model//./_}"
