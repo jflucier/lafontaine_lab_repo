@@ -1,26 +1,27 @@
 #!/bin/bash
 #SBATCH --nodes 1
 #SBATCH --ntasks 1
-#SBATCH --cpus-per-task 1
-#SBATCH --gres=gpu:1
-#SBATCH --mem 25G
-#SBATCH -A def-rodrigu1
+#SBATCH --cpus-per-task 24
+#SBATCH --mem 30G
+#SBATCH -A def-lafontai
 #SBATCH --time 72:00:00
-#SBATCH --output=pepmlm_%A.log
-#SBATCH -J pepmlm
+#SBATCH --output=rbs_%A.log
+#SBATCH -J rbs
 
 # Parsing command line options
+ENV=""
 basepath=""
 fasta_path=""
 gb_path=""
 gene_info=""
 model_path=""
-TEMP=$(getopt -o b:f:g:i:m: --long base:,fa:,gb:,gene:,model: -n 'rbs_submit.slurm' -- "$@")
+TEMP=$(getopt -o e:b:f:g:i:m: --long env:,base:,fa:,gb:,gene:,model: -n 'rbs_submit.slurm' -- "$@")
 
 eval set -- "$TEMP"
 
 while true ; do
     case "$1" in
+        -e|--env) ENV="$2" ; shift 2 ;;
         -b|--base) basepath="$2" ; shift 2 ;;
         -f|--fa) fasta_path="$2" ; shift 2 ;;
         -g|--gb) gb_path="$2" ; shift 2 ;;
