@@ -7,7 +7,8 @@ gene_info=""
 model_path=""
 cmsearch=""
 repo=""
-TEMP=$(getopt -o b:f:g:i:m:c:s: --long base:,fa:,gb:,gene:,model:,cm:,script: -n 'rbs_submit.slurm' -- "$@")
+tmp=""
+TEMP=$(getopt -o b:f:g:i:m:c:s:t: --long base:,fa:,gb:,gene:,model:,cm:,script:,temp: -n 'rbs_submit.slurm' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -20,6 +21,7 @@ while true ; do
         -m|--model) model_path="$2" ; shift 2 ;;
         -c|--cm) cm="$2" ; shift 2 ;;
         -s|--script) repo="$2" ; shift 2 ;;
+        -t|--temp) tmp="$2" ; shift 2 ;;
         --) shift ; break ;;
         *) echo "Invalid Option" ; exit 1 ;;
     esac
@@ -33,6 +35,7 @@ echo "GENE_INFO: ${gene_info}"
 echo "MODEL_PATH: ${model_path}"
 echo "CMSEARCH: ${cm}"
 echo "REPO: ${repo}"
+echo "TEMP: ${tmp}"
 
 #basepath=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2
 #fasta_path=/fast2/def-lafontai/ensembl_metazoa/release-61/fasta/fasta/
@@ -64,13 +67,13 @@ find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" -print0
 
   if [ ! -f ${outpath}/${gf}.${rf_model}.tsv ]; then
     echo "##### $COUNTER/${total}: running cmsearch on ${gf}"
-    zcat $g > ${fasta_path}/${gf}
+    zcat $g > ${tmp}/${gf}
 
     ${cm} \
     --cpu 24 --notrunc -E 0.1 \
     -o ${outpath}/${gf}.${rf_model}.out \
     --tblout ${outpath}/${gf}.${rf_model}.tbl --fmt 3 \
-    ${rf_model_path} ${fasta_path}/${gf}
+    ${rf_model_path} ${tmp}/${gf}
 
     perl -e '
     open(my $FH, "<'${outpath}'/'${gf}'.'${rf_model}'.tbl ");
