@@ -53,6 +53,6 @@ sh ${SCRIPT_PATH} \
 --gene "${gene_info}" \
 --model "${model_path}" \
 --cm "${CMSEARCH_BIN}" \
-
+--repo "${REPO_PATH}"
 
 echo "done!"
