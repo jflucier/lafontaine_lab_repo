@@ -67,8 +67,10 @@ find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" -print0
 
   if [ ! -f ${outpath}/${gf}.${rf_model}.tsv ]; then
     echo "##### $COUNTER/${total}: running cmsearch on ${gf}"
+    echo "unzipping ${g}"
     zcat $g > ${tmp}/${gf}
 
+    echo "running cmsearch"
     ${cm} \
     --cpu 24 --notrunc -E 0.1 \
     -o ${outpath}/${gf}.${rf_model}.out \
