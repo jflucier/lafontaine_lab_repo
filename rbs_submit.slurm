@@ -35,24 +35,22 @@ done
 if [[ "${ENV}" == "mp2" ]]; then
   echo "activating mp2 env"
   source /net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/venv_mp2/bin/activate
-  SCRIPT_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.sh"
+  SCRIPT_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo"
   CMSEARCH_BIN="/net/nfs-ip34/home/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
-  REPO_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo"
 else
   echo "activating ip34 env"
   source /home/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
-  SCRIPT_PATH="/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.sh"
+  SCRIPT_PATH="/home/def-lafontai/programs/lafontaine_lab_repo"
   CMSEARCH_BIN="/home/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
-  REPO_PATH="/home/def-lafontai/programs/lafontaine_lab_repo"
 fi
 
-sh ${SCRIPT_PATH} \
+sh ${SCRIPT_PATH}/run_cmsearch_pipeline.sh \
 --base "${basepath}" \
 --fa "${fasta_path}" \
 --gb "${gb_path}" \
 --gene "${gene_info}" \
 --model "${model_path}" \
 --cm "${CMSEARCH_BIN}" \
---repo "${REPO_PATH}"
+--script "${SCRIPT_PATH}"
 
 echo "done!"

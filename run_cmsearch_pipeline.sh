@@ -7,7 +7,7 @@ gene_info=""
 model_path=""
 cmsearch=""
 repo=""
-TEMP=$(getopt -o b:f:g:i:m:c:r: --long base:,fa:,gb:,gene:,model:,cm:,repo: -n 'rbs_submit.slurm' -- "$@")
+TEMP=$(getopt -o b:f:g:i:m:c:s: --long base:,fa:,gb:,gene:,model:,cm:,script: -n 'rbs_submit.slurm' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -19,7 +19,7 @@ while true ; do
         -i|--gene) gene_info="$2" ; shift 2 ;;
         -m|--model) model_path="$2" ; shift 2 ;;
         -c|--cm) cm="$2" ; shift 2 ;;
-        -r|--repo) cm="$2" ; shift 2 ;;
+        -s|--script) repo="$2" ; shift 2 ;;
         --) shift ; break ;;
         *) echo "Invalid Option" ; exit 1 ;;
     esac
