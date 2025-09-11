@@ -37,11 +37,13 @@ if [[ "${ENV}" == "mp2" ]]; then
   source /net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/venv_mp2/bin/activate
   SCRIPT_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.sh"
   CMSEARCH_BIN="/net/nfs-ip34/home/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
+  REPO_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo"
 else
   echo "activating ip34 env"
   source /home/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
   SCRIPT_PATH="/home/def-lafontai/programs/lafontaine_lab_repo/run_cmsearch_pipeline.sh"
   CMSEARCH_BIN="/home/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
+  REPO_PATH="/home/def-lafontai/programs/lafontaine_lab_repo"
 fi
 
 sh ${SCRIPT_PATH} \
@@ -50,6 +52,7 @@ sh ${SCRIPT_PATH} \
 --gb "${gb_path}" \
 --gene "${gene_info}" \
 --model "${model_path}" \
---cm "${CMSEARCH_BIN}"
+--cm "${CMSEARCH_BIN}" \
+
 
 echo "done!"

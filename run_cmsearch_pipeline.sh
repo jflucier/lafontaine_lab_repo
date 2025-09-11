@@ -6,7 +6,8 @@ gb_path=""
 gene_info=""
 model_path=""
 cmsearch=""
-TEMP=$(getopt -o b:f:g:i:m:c: --long base:,fa:,gb:,gene:,model:,cm: -n 'rbs_submit.slurm' -- "$@")
+repo=""
+TEMP=$(getopt -o b:f:g:i:m:c:r: --long base:,fa:,gb:,gene:,model:,cm:,repo: -n 'rbs_submit.slurm' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -18,6 +19,7 @@ while true ; do
         -i|--gene) gene_info="$2" ; shift 2 ;;
         -m|--model) model_path="$2" ; shift 2 ;;
         -c|--cm) cm="$2" ; shift 2 ;;
+        -r|--repo) cm="$2" ; shift 2 ;;
         --) shift ; break ;;
         *) echo "Invalid Option" ; exit 1 ;;
     esac
@@ -30,6 +32,7 @@ echo "GB_PATH: ${gb_path}"
 echo "GENE_INFO: ${gene_info}"
 echo "MODEL_PATH: ${model_path}"
 echo "CMSEARCH: ${cm}"
+echo "REPO: ${repo}"
 
 #basepath=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2
 #fasta_path=/fast2/def-lafontai/ensembl_metazoa/release-61/fasta/fasta/
@@ -155,7 +158,7 @@ where
 "
 
 echo "prepare params for overlapping feature"
-python3 /home/def-lafontai/programs/lafontaine_lab_repo/find_riboswitch_genbank_file.py \
+python3 ${repo}/find_riboswitch_genbank_file.py \
 --num_processes 4 --rf_model ${rf_model} \
 --gb_path ${gb_path} \
 --input_file ${outpath}/all.${rf_model}.sp.tsv \
@@ -167,7 +170,7 @@ awk '{print $NF,$0}' ${outpath}/all.${rf_model}.sp.out.tsv.uniq | sort | cut -f2
 > ${outpath}/all.${rf_model}.sp.out.tsv.uniq.genomesorted
 
 echo "find overlapping features"
-python3 /net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/find_riboswitch_overlapping_features_by_genome.py \
+python3 ${repo}/find_riboswitch_overlapping_features_by_genome.py \
 -i ${outpath}/all.${rf_model}.sp.out.tsv.uniq.genomesorted \
 -o ${outpath}/all.${rf_model}.sp.out.tsv.uniq.genomesorted.over.tsv
 
@@ -221,7 +224,7 @@ from
 " > ${outpath}/all.${rf_model}.ensembl.genome.riboswitch.filtered.tsv
 
 echo "get riboswitch sequences"
-python /net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/find_riboswitch_sequence.py \
+python ${repo}/find_riboswitch_sequence.py \
 -i ${outpath}/all.${rf_model}.ensembl.genome.riboswitch.filtered.tsv \
 -o ${outpath}/all.${rf_model}.ensembl.genome.riboswitch.filtered.outseq.tsv \
 -g ${fasta_path}
