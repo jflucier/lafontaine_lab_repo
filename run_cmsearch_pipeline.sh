@@ -50,7 +50,7 @@ export rf_model_file=$(basename $rf_model_path)
 export rf_model="${rf_model_file%.cm}"
 export db_rf_model="${rf_model//./_}"
 export db_rf_model="${db_rf_model//-/_}"
-export=$(basename ${basepath})
+export b=$(basename ${basepath})
 export sqlitedb="${b}_${rf_model}.sqlite"
 
 echo "running ${rf_model}"
