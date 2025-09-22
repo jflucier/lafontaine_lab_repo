@@ -29,7 +29,7 @@ def get_sequences(in_f, outpath, genome_base):
 
     counter = 1
     out = []
-    genbank_dir_marker = os.path.join("genbank", "genbank")  # Ensures cross-OS compatibility
+    genbank_dir_marker = os.path.join("genbank")  # Ensures cross-OS compatibility
 
     for gb_path, row in x:
         print(f"{counter}/{x.ngroups}: retreving sequences in {gb_path} hits")
