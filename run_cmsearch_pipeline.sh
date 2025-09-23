@@ -90,6 +90,7 @@ find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" -print0
       }
     }
     ' > ${outpath}/${gf}.${rf_model}.tsv
+    echo "cleaning temp"
     rm ${tmp}/${gf}
   else
     echo "+++++ $COUNTER/361: results already exists: ${outpath}/${gf}.${rf_model}.tsv"
