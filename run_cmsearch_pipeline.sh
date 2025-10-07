@@ -73,7 +73,7 @@ find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" -print0
 
     echo "running cmsearch"
     ${cm} \
-    --cpu 24 --notrunc -E 0.1 \
+    --cpu 48 --notrunc -E 0.1 \
     -o ${outpath}/${gf}.${rf_model}.out \
     --tblout ${outpath}/${gf}.${rf_model}.tbl --fmt 3 \
     ${rf_model_path} ${tmp}/${gf}
