@@ -287,7 +287,7 @@ select distinct
   ann.start,
   ann.end,
   ann.strand,
-  substr(ann.gene, 3, length(ann.gene) - 4) ann_gene,
+  ann.gene ann_gene,
   db2.g.id,
   db2.g.info,
   db2.g.gb_info,
@@ -305,7 +305,7 @@ from
       AND ann.start=rs.target_from_coord
       AND ann.end=rs.target_to_coord
       AND ann.strand=rs.strand_lbl
-  left join db2.gene_info g on db2.g.id=substr(ann.gene, 3, length(ann.gene) - 4)
+  left join db2.gene_info g on db2.g.id=ann.gene
   left join rs_ensembl_genomes_annot_strandspec_seq_${db_rf_model} seq
     on seq.specie=rs.specie
       AND seq.chr=rs.target_name
@@ -339,7 +339,7 @@ select distinct
   ann.start,
   ann.end,
   ann.strand,
-  substr(ann.gene, 3, length(ann.gene) - 4) ann_gene,
+  ann.gene ann_gene,
   db2.g.id,
   db2.g.info,
   db2.g.gb_info,
@@ -357,7 +357,7 @@ from
       AND ann.start=rs.target_from_coord
       AND ann.end=rs.target_to_coord
       AND ann.strand=rs.strand_lbl
-  join db2.gene_info g on db2.g.id=substr(ann.gene, 3, length(ann.gene) - 4)
+  join db2.gene_info g on db2.g.id=ann.gene
   left join rs_ensembl_genomes_annot_strandspec_seq_${db_rf_model} seq
     on seq.specie=rs.specie
       AND seq.chr=rs.target_name
