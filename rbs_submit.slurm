@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --nodes 1
 #SBATCH --ntasks 1
-#SBATCH --cpus-per-task 48
-#SBATCH --mem 200G
+#SBATCH --cpus-per-task 24
+#SBATCH --mem 30G
 #SBATCH -A def-lafontai
 #SBATCH --time 72:00:00
 #SBATCH --output=rbs_%A.log

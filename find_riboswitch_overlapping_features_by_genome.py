@@ -103,6 +103,24 @@ def output_features(out, all_feat):
                     else:
                         print(f"key gene or locus_tag not found in feature: {feature}")
                         sys.exit(0)
+
+                    # remove gene version if found
+                    # Check if 'g' ends with '.1' or contains a '.' and remove the version suffix
+                    if isinstance(g, list):
+                        # Assuming g is a list with one element (a common Biopython pattern for qualifiers)
+                        g_str = g[0]
+                    else:
+                        g_str = g
+
+                    if '.' in g_str:
+                        # Split by '.' and take the first part (e.g., "ENSUTTG00000021883.1" -> "ENSUTTG00000021883")
+                        g_trimmed = g_str.split('.')[0]
+                    else:
+                        g_trimmed = g_str
+                    # Use the trimmed value
+                    g = g_trimmed
+                    # --- MODIFICATION END ---
+
                     if 'db_xref' in feature["f"].qualifiers:
                         xref = feature["f"].qualifiers['db_xref']
                     else:
