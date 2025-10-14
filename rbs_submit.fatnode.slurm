@@ -54,6 +54,7 @@ sh ${SCRIPT_PATH}/run_cmsearch_pipeline.sh \
 --model "${model_path}" \
 --cm "${CMSEARCH_BIN}" \
 --script "${SCRIPT_PATH}" \
---temp "${TEMP_DIR}"
+--temp "${TEMP_DIR}" \
+--cpu 48
 
 echo "done!"

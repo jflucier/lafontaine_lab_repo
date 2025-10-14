@@ -5,10 +5,11 @@ fasta_path=""
 gb_path=""
 gene_info=""
 model_path=""
-cmsearch=""
+cm=""
 repo=""
 tmp=""
-TEMP=$(getopt -o b:f:g:i:m:c:s:t: --long base:,fa:,gb:,gene:,model:,cm:,script:,temp: -n 'rbs_submit.slurm' -- "$@")
+cpu=24
+TEMP=$(getopt -o b:f:g:i:m:c:s:t:n: --long base:,fa:,gb:,gene:,model:,cm:,script:,temp:,cpu: -n 'rbs_submit.slurm' -- "$@")
 
 eval set -- "$TEMP"
 
@@ -22,6 +23,7 @@ while true ; do
         -c|--cm) cm="$2" ; shift 2 ;;
         -s|--script) repo="$2" ; shift 2 ;;
         -t|--temp) tmp="$2" ; shift 2 ;;
+        -n|--cpu) cpu="$2" ; shift 2 ;;
         --) shift ; break ;;
         *) echo "Invalid Option" ; exit 1 ;;
     esac
@@ -36,6 +38,7 @@ echo "MODEL_PATH: ${model_path}"
 echo "CMSEARCH: ${cm}"
 echo "REPO: ${repo}"
 echo "TEMP: ${tmp}"
+echo "CPU: ${cpu}"
 
 #basepath=/fast2/def-lafontai/ensembl_metazoa/20250902_riboswitch_metazoa_run2
 #fasta_path=/fast2/def-lafontai/ensembl_metazoa/release-61/fasta/fasta/
@@ -73,7 +76,7 @@ find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" -print0
 
     echo "running cmsearch"
     ${cm} \
-    --cpu 24 --notrunc -E 0.1 \
+    --cpu ${cpu} --notrunc -E 0.1 \
     -o ${outpath}/${gf}.${rf_model}.out \
     --tblout ${outpath}/${gf}.${rf_model}.tbl --fmt 3 \
     ${rf_model_path} ${tmp}/${gf}
@@ -167,7 +170,7 @@ where
 
 echo "prepare params for overlapping feature"
 python3 ${repo}/find_riboswitch_genbank_file.py \
---num_processes 4 --rf_model ${rf_model} \
+--num_processes ${cpu} --rf_model ${rf_model} \
 --gb_path ${gb_path} \
 --input_file ${outpath}/all.${rf_model}.sp.tsv \
 --output_file ${outpath}/all.${rf_model}.sp.out.tsv
