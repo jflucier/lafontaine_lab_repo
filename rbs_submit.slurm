@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task 24
 #SBATCH --mem 30G
 #SBATCH -A def-lafontai
-#SBATCH --time 72:00:00
+#SBATCH --time 168:00:00
 #SBATCH --output=rbs_%A.log
 #SBATCH -J rbs
 
