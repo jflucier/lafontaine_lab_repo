@@ -69,7 +69,7 @@ find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" -print0
   genome_tmp=$(basename $g)
   gf=${genome_tmp%.gz}
 
-  if [ ! -f ${outpath}/${gf}.${rf_model}.tsv ]; then
+  if [ ! -f ${outpath}/${gf}.${rf_model}.out ]; then
     echo "##### $COUNTER/${total}: running cmsearch on ${gf}"
     echo "unzipping ${g}"
     zcat $g > ${tmp}/${gf}
