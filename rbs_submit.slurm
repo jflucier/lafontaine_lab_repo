@@ -34,15 +34,15 @@ done
 
 if [[ "${ENV}" == "mp2" ]]; then
   echo "activating mp2 env"
-  source /net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo/venv_mp2/bin/activate
-  SCRIPT_PATH="/net/nfs-ip34/home/def-lafontai/programs/lafontaine_lab_repo"
-  CMSEARCH_BIN="/net/nfs-ip34/home/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
+  source /net/nfs-ip34/jbod2/def-lafontai/programs/lafontaine_lab_repo/venv_mp2/bin/activate
+  SCRIPT_PATH="/net/nfs-ip34/jbod2/def-lafontai/programs/lafontaine_lab_repo"
+  CMSEARCH_BIN="/net/nfs-ip34/jbod2/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
   TEMP_DIR="${SLURM_TMPDIR}"
 else
   echo "activating ip34 env"
-  source /home/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
-  SCRIPT_PATH="/home/def-lafontai/programs/lafontaine_lab_repo"
-  CMSEARCH_BIN="/home/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
+  source /jbod2/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
+  SCRIPT_PATH="/jbod2/def-lafontai/programs/lafontaine_lab_repo"
+  CMSEARCH_BIN="/jbod2/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
   TEMP_DIR="/fast_tmp"
 fi
 
