@@ -121,22 +121,27 @@ def get_sequences(in_f, outpath, genome_base):
             end = r['end']
             strand = r['strand']
 
-            if strand == 1:
-                seq = fa.fetch(a, (start, end))
-            else:
-                seq = reverse_complement(fa.fetch(a, (end, start)))
+            try:
+                if strand == 1:
+                    seq = fa.fetch(a, (start, end))
+                else:
+                    seq = reverse_complement(fa.fetch(a, (end, start)))
 
-            out.append({
-                'fa': fa_path,
-                'chr': a,
-                'start': start,
-                'end': end,
-                'strand': strand,
-                'seq': seq
-            })
+                out.append({
+                    'fa': fa_path,
+                    'chr': a,
+                    'start': start,
+                    'end': end,
+                    'strand': strand,
+                    'seq': seq
+                })
+            except Exception as e:
+                print(f"Error fetching sequence {a} at {start}-{end}: {e}")
+                continue
 
+    if out:
         l = len(out)
-        print(f"Outputting seq appended to lines")
+        print(f"Outputting seq appended to lines. Nbr of line={l}")
         df = pd.DataFrame(out)
         df.to_csv(outpath, sep="\t", index=False)
 
