@@ -136,7 +136,7 @@ def get_sequences(in_f, outpath, genome_base):
                     'seq': seq
                 })
             except Exception as e:
-                print(f"Error fetching sequence {a} at {start}-{end}: {e}")
+                print(f"######## Error fetching sequence {a} at {start}-{end}: {e} #######")
                 continue
 
     if out:
