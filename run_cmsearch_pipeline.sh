@@ -64,7 +64,7 @@ mkdir -p ${outpath}
 echo "running cmsearch"
 COUNTER=1
 #rm -fr ${outpath}/${rf_model}
-total=$(find "${fasta_path}" -name "*.toplevel.fa.gz" -not -path "*/dna_index/*" | wc -l)
+total=$(find "${fasta_path}" -name "*.dna.toplevel.fa.gz" -not -path "*/dna_index/*" | wc -l)
 find "${fasta_path}" -name "*.dna.toplevel.fa.gz" -not -path "*/dna_index/*" -print0 | while IFS= read -r -d '' g; do
   genome_tmp=$(basename $g)
   gf=${genome_tmp%.gz}
