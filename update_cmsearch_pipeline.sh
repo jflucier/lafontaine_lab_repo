@@ -64,12 +64,12 @@ mkdir -p ${outpath}
 echo "cleanup prev run"
 echo "total dna_rm to remove: "
 ls ${outpath}/*.dna_rm.toplevel.fa.${rf_model}.* | wc -l
-rm -fr ${outpath}/*.dna_rm.toplevel.fa.${rf_model}.*
+rm -f ${outpath}/*.dna_rm.toplevel.fa.${rf_model}.*
 echo "total dna_sm to remove: "
 ls ${outpath}/*.dna_sm.toplevel.fa.${rf_model}.* | wc -l
-rm -fr ${outpath}/*.dna_sm.toplevel.fa.${rf_model}.*
+rm -f ${outpath}/*.dna_sm.toplevel.fa.${rf_model}.*
 
-rm ${outpath}/all.${rf_model}.tsv
+rm -f ${outpath}/all.${rf_model}.tsv
 
 echo "combining cmsearch"
 cat ${outpath}/*.${rf_model}.tsv > ${outpath}/all.${rf_model}.tsv
