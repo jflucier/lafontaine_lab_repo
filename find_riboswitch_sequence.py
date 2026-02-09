@@ -66,13 +66,13 @@ def get_sequences(in_f, outpath, genome_base):
         # sp = os.path.basename(os.path.dirname(gb_path))
         # base_fa_path = os.path.join(genome_base, sp, "dna")
         print(f"base fa path: {base_fa_path}")
-        pattern = re.compile(".*.nonchromosomal.dat.gz$")
+        pattern = re.compile(".*.dna.nonchromosomal.dat.gz$")
         if pattern.match(gb_path):
             # nonchromosomal
-            fa_pattern = re.compile(".*.nonchromosomal.fa.gz$")
+            fa_pattern = re.compile(".*.dna.nonchromosomal.fa.gz$")
         else:
             # toplevel
-            fa_pattern = re.compile(".*.toplevel.fa.gz$")
+            fa_pattern = re.compile(".*.dna.toplevel.fa.gz$")
 
         fa_path = ""
         for root, dirs, files in os.walk(base_fa_path):
@@ -85,7 +85,7 @@ def get_sequences(in_f, outpath, genome_base):
 
         if not os.path.exists(fa_path):
             print(f"Fasta not found. Falling back to toplevel file")
-            fa_pattern = re.compile(".*.toplevel.fa.gz$")
+            fa_pattern = re.compile(".*.dna.toplevel.fa.gz$")
             for root, dirs, files in os.walk(base_fa_path):
                 for f in files:
                     if fa_pattern.match(f):
