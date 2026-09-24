@@ -57,6 +57,11 @@ EXTRA_COLS = [f"info_{k}" for k in INFO_KEYS] + ["info_other"]
 INFO_RE = re.compile(r'(\w+)\s+"([^"]*)"\s*;?')
 
 
+def kingdom_from_dir(d):
+    """ensembl_fungi -> fungi (works on Python < 3.9)"""
+    return d[len("ensembl_"):] if d.startswith("ensembl_") else d
+
+
 def parse_info(info):
     if not info:
         return [None] * len(EXTRA_COLS)
@@ -79,7 +84,7 @@ def select_files(base, args):
     files = sorted(base.glob("ensembl_*/*/*/*.ensembl.genome.riboswitch.report.tsv"))
     if args.kingdom:
         files = [f for f in files
-                 if f.relative_to(base).parts[0].removeprefix("ensembl_") in args.kingdom]
+                 if kingdom_from_dir(f.relative_to(base).parts[0]) in args.kingdom]
     if args.run:
         files = [f for f in files if any(r in f.relative_to(base).parts[1] for r in args.run)]
     if args.per_run:
@@ -172,7 +177,7 @@ def main():
     if args.dry_run:
         for f in files:
             rel = f.relative_to(base)
-            print(f"{rel.parts[0].removeprefix('ensembl_')}\t{run_id_from_dir(rel.parts[1])}\t{rel}")
+            print(f"{kingdom_from_dir(rel.parts[0])}\t{run_id_from_dir(rel.parts[1])}\t{rel}")
         print(f"{len(files)} files")
         return
 
@@ -194,7 +199,7 @@ def main():
     per_file_expected = defaultdict(int)
     for f in files:
         rel = f.relative_to(base)
-        kingdom = rel.parts[0].removeprefix("ensembl_")
+        kingdom = kingdom_from_dir(rel.parts[0])
         run_id = run_id_from_dir(rel.parts[1])
         rows, bad = [], None
         with open(f, newline="", encoding="utf-8") as fh:
