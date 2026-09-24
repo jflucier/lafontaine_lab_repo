@@ -195,22 +195,34 @@ def main():
     con.execute(f"CREATE TABLE {TABLE} (\n    {cols_sql}\n)")
     insert_sql = f"INSERT INTO {TABLE} VALUES ({','.join('?' * (NCOL + 2 + len(EXTRA_COLS)))})"
 
-    n_ok = n_skip = expected_total = 0
+    n_ok = n_skip = n_empty = expected_total = 0
     per_file_expected = defaultdict(int)
     for f in files:
         rel = f.relative_to(base)
         kingdom = kingdom_from_dir(rel.parts[0])
         run_id = run_id_from_dir(rel.parts[1])
         rows, bad = [], None
+
+        if f.stat().st_size == 0:
+            n_empty += 1
+            continue
+
         with open(f, newline="", encoding="utf-8") as fh:
             reader = csv.reader(fh, delimiter="\t", quoting=csv.QUOTE_NONE)
             header = next(reader, None)
-            if not header or header[0] != "specie":
+
+            if not header:
+                n_empty += 1
+                continue
+
+            if header[0] != "specie":
                 print(f"SKIP (unexpected header): {rel}", file=sys.stderr)
                 n_skip += 1
                 continue
+
             if len(header) != NCOL:
                 print(f"WARN header has {len(header)} fields (expected {NCOL}): {rel}", file=sys.stderr)
+
             for lineno, row in enumerate(reader, start=2):
                 if not row:
                     continue
@@ -254,7 +266,7 @@ def main():
     con.commit()
 
     print(f"\nDB: {db}")
-    print(f"Imported {n_ok} reports ({expected_total} rows), skipped {n_skip}, integrity failures {fails}")
+    print(f"Imported {n_ok} reports ({expected_total} rows), empty/no-hit {n_empty}, skipped errors {n_skip}, integrity failures {fails}")
     print("kingdom\trun_id\tn\tannotated\twith_seq")
     for r in con.execute(f"SELECT ensembl_kingdom, run_id, COUNT(*), COUNT(start), COUNT(seq) "
                          f"FROM {TABLE} GROUP BY 1,2"):
