@@ -265,6 +265,7 @@ def main():
     con.execute("ANALYZE")
     con.commit()
 
+
     print(f"\nDB: {db}")
     print(f"Imported {n_ok} reports ({expected_total} rows), empty/no-hit {n_empty}, skipped errors {n_skip}, integrity failures {fails}")
     print("kingdom\trun_id\tn\tannotated\twith_seq")
