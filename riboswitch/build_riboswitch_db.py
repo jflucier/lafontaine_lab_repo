@@ -144,7 +144,7 @@ def integrity_checks(con, expected_total, per_file_expected):
     report("id == info_gene_id where both are set", bad == 0, f"{bad} rows" if bad else "")
 
     bad = con.execute(
-        f"SELECT COUNT(*) FROM {TABLE} WHERE seq IS NOT NULL AND seq GLOB '*[^ACGTUNacgtun]*'").fetchone()[0]
+        f"SELECT COUNT(*) FROM {TABLE} WHERE seq IS NOT NULL AND seq GLOB '*[^ACGTUNMRWSYKVHDBacgtunmrwsykvhdb]*'").fetchone()[0]
     report("seq contains only nucleotide letters", bad == 0, f"{bad} rows" if bad else "")
 
     bad = con.execute(f"SELECT COUNT(*) FROM {TABLE} WHERE specie IS NULL OR chr IS NULL OR query_accession IS NULL").fetchone()[0]
