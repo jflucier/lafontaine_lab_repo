@@ -199,8 +199,10 @@ def main():
     per_file_expected = defaultdict(int)
     for f in files:
         rel = f.relative_to(base)
-        kingdom = kingdom_from_dir(rel.parts[0])
-        run_id = run_id_from_dir(rel.parts[1])
+        # kingdom = kingdom_from_dir(rel.parts[0])
+        kingdom = rel.parts[0]
+        # run_id = run_id_from_dir(rel.parts[1])
+        run_id = rel.parts[1]
         rows, bad = [], None
 
         if f.stat().st_size == 0:
