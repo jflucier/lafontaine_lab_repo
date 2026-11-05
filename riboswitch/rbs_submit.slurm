@@ -46,7 +46,7 @@ else
   TEMP_DIR="/fast_tmp"
 fi
 
-sh ${SCRIPT_PATH}/run_cmsearch_pipeline.sh \
+sh ${SCRIPT_PATH}/riboswitch/run_cmsearch_pipeline.sh \
 --base "${basepath}" \
 --fa "${fasta_path}" \
 --gb "${gb_path}" \
