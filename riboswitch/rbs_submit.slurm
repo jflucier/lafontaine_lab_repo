@@ -35,16 +35,14 @@ done
 if [[ "${ENV}" == "mp2" ]]; then
   echo "activating mp2 env"
   source /net/nfs-ip34/jbod2/def-lafontai/programs/lafontaine_lab_repo/venv_mp2/bin/activate
-  SCRIPT_PATH="/net/nfs-ip34/jbod2/def-lafontai/programs/lafontaine_lab_repo"
-  CMSEARCH_BIN="/net/nfs-ip34/jbod2/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
-  TEMP_DIR="${SLURM_TMPDIR}"
 else
   echo "activating ip34 env"
-  source /jbod2/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
-  SCRIPT_PATH="/jbod2/def-lafontai/programs/lafontaine_lab_repo"
-  CMSEARCH_BIN="/jbod2/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
-  TEMP_DIR="/fast_tmp"
+  source /net/nfs-ip34/jbod2/def-lafontai/programs/lafontaine_lab_repo/venv/bin/activate
 fi
+
+SCRIPT_PATH="/net/nfs-ip34/jbod2/def-lafontai/programs/lafontaine_lab_repo/riboswitch"
+CMSEARCH_BIN="/net/nfs-ip34/jbod2/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
+TEMP_DIR="${SLURM_TMPDIR}"
 
 sh ${SCRIPT_PATH}/riboswitch/run_cmsearch_pipeline.sh \
 --base "${basepath}" \
