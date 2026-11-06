@@ -44,7 +44,7 @@ SCRIPT_PATH="/net/nfs-ip34/jbod2/def-lafontai/programs/lafontaine_lab_repo/ribos
 CMSEARCH_BIN="/net/nfs-ip34/jbod2/def-lafontai/programs/infernal-1.1.5-linux-intel-gcc/binaries/cmsearch"
 TEMP_DIR="${SLURM_TMPDIR}"
 
-sh ${SCRIPT_PATH}/riboswitch/run_cmsearch_pipeline.sh \
+sh ${SCRIPT_PATH}/run_cmsearch_pipeline.sh \
 --base "${basepath}" \
 --fa "${fasta_path}" \
 --gb "${gb_path}" \
