@@ -4,9 +4,12 @@ build_riboswitch_db.py
 
 Imports every <base>/ensembl_*/<run_dir>/<model>/<model>.ensembl.genome.riboswitch.report.tsv
 into one SQLite table, prepending:
-  ensembl_kingdom : genomes, fungi, plants, protists, metazoa  (from the ensembl_<kingdom> folder)
-  run_id          : run folder name without the date and without a leading
-                    riboswitch_ / rbs_ / ensemblgenomes_ prefix
+  ensembl_kingdom : name of the ensembl_<kingdom> folder (as-is, e.g. ensembl_fungi)
+  run_id          : run folder name (as-is, e.g. 20250715_riboswitch_protist_run1)
+
+Columns are matched BY HEADER NAME, not by position, so report files with a
+different column set or order (e.g. no gb_info column) load correctly.
+Columns missing from a file are stored as NULL.
 
 The GTF-style "info" field is also split into info_gene_id, info_gene_source,
 info_gene_biotype and info_other. Quotes inside fields are kept as-is.
@@ -20,19 +23,22 @@ Examples
 
   # quick test: only the first 10 files, only fungi
   python3 build_riboswitch_db.py BASE --limit 10 --kingdom fungi
+
+  # list the distinct header layouts found, then exit
+  python3 build_riboswitch_db.py BASE --scan-headers
 """
 import argparse
 import csv
 import re
 import sqlite3
 import sys
-from collections import defaultdict
+from collections import defaultdict, Counter
 from pathlib import Path
 
 TABLE = "riboswitch_report"
 DEFAULT_BASE = "/jbod2/def-lafontai/analysis/riboswitch_eukaryotes"
 
-# (name, type) in the order of the original report columns
+# canonical schema: (name, type) -- the DB column order
 REPORT_COLS = [
     ("specie", "TEXT"), ("chr", "TEXT"), ("query_name", "TEXT"),
     ("query_accession", "TEXT"), ("model_type", "TEXT"),
@@ -47,8 +53,10 @@ REPORT_COLS = [
     ("xref", "TEXT"), ("prod", "TEXT"), ("overlap_type", "TEXT"),
     ("seq", "TEXT"),
 ]
-NCOL = len(REPORT_COLS)  # 32
-INFO_IDX = [n for n, _ in REPORT_COLS].index("info")
+COL_NAMES = [n for n, _ in REPORT_COLS]
+NCOL = len(REPORT_COLS)
+REQUIRED_COLS = ["specie", "chr", "query_accession"]
+ALLOWED_OVERLAP = ("intron", "exon", "UTR5", "UTR3")
 
 # parsed out of the GTF-style "info" field: key "value"; key "value";
 # keys not listed here are kept together in info_other
@@ -62,6 +70,13 @@ def kingdom_from_dir(d):
     return d[len("ensembl_"):] if d.startswith("ensembl_") else d
 
 
+def run_id_from_dir(run_dir):
+    """20250715_riboswitch_protist_run1 -> protist_run1 (not used by default)"""
+    s = re.sub(r"^[0-9]{8}_", "", run_dir)
+    s = re.sub(r"^(riboswitch|rbs)_", "", s)
+    return re.sub(r"^ensemblgenomes_", "", s)
+
+
 def parse_info(info):
     if not info:
         return [None] * len(EXTRA_COLS)
@@ -72,12 +87,6 @@ def parse_info(info):
         else:
             other.append(f'{k} "{v}"')
     return [found.get(k) for k in INFO_KEYS] + ["; ".join(other) or None]
-
-
-def run_id_from_dir(run_dir):
-    s = re.sub(r"^[0-9]{8}_", "", run_dir)
-    s = re.sub(r"^(riboswitch|rbs)_", "", s)
-    return re.sub(r"^ensemblgenomes_", "", s)
 
 
 def select_files(base, args):
@@ -100,6 +109,30 @@ def select_files(base, args):
     return files
 
 
+def read_header(f):
+    """First line of a report as a list of column names ([] if the file is empty)."""
+    if f.stat().st_size == 0:
+        return []
+    with open(f, newline="", encoding="utf-8") as fh:
+        return next(csv.reader(fh, delimiter="\t", quoting=csv.QUOTE_NONE), [])
+
+
+def scan_headers(files, base):
+    """Group files by header layout and print a summary."""
+    layouts = defaultdict(list)
+    for f in files:
+        layouts[tuple(read_header(f))].append(f.relative_to(base))
+    print(f"{len(layouts)} distinct header layout(s) in {len(files)} files\n")
+    for i, (hdr, fl) in enumerate(sorted(layouts.items(), key=lambda x: -len(x[1])), 1):
+        missing = [n for n in COL_NAMES if n not in hdr]
+        unknown = [h for h in hdr if h not in COL_NAMES]
+        reordered = [h for h in hdr if h in COL_NAMES] != [n for n in COL_NAMES if n in hdr]
+        print(f"layout {i}: {len(hdr)} columns, {len(fl)} files, e.g. {fl[0]}")
+        print(f"   missing vs schema : {missing or '-'}")
+        print(f"   unknown columns   : {unknown or '-'}")
+        print(f"   order differs     : {reordered}")
+
+
 def integrity_checks(con, expected_total, per_file_expected):
     """Print integrity checks; return number of failures."""
     fails = 0
@@ -110,7 +143,10 @@ def integrity_checks(con, expected_total, per_file_expected):
         if not ok:
             fails += 1
 
-    n = con.execute(f"SELECT COUNT(*) FROM {TABLE}").fetchone()[0]
+    def count(where):
+        return con.execute(f"SELECT COUNT(*) FROM {TABLE} WHERE {where}").fetchone()[0]
+
+    n = count("1=1")
     report("row count in DB == data rows read from files", n == expected_total,
            f"db={n} files={expected_total}")
 
@@ -122,32 +158,43 @@ def integrity_checks(con, expected_total, per_file_expected):
             bad_groups.append(f"{k}/{r}: db={got} files={exp}")
     report("per (kingdom, run) row counts match", not bad_groups, "; ".join(bad_groups))
 
+    bad_cols = []
     for name, typ in REPORT_COLS:
         if typ in ("INTEGER", "REAL"):
-            bad = con.execute(
-                f'SELECT COUNT(*) FROM {TABLE} WHERE "{name}" IS NOT NULL '
-                f'AND typeof("{name}") NOT IN ("integer","real")').fetchone()[0]
+            bad = count(f"\"{name}\" IS NOT NULL AND typeof(\"{name}\") NOT IN ('integer','real')")
             if bad:
-                report(f"numeric column {name} holds only numbers", False, f"{bad} non-numeric values")
-    numeric_ok = True  # failures for individual numeric columns are reported above
-    bad = con.execute(f"SELECT COUNT(*) FROM {TABLE} WHERE strand_lbl NOT IN (1,-1) OR strand_lbl IS NULL").fetchone()[0]
+                bad_cols.append(f"{name}: {bad}")
+    report("numeric columns hold only numbers", not bad_cols, "; ".join(bad_cols))
+
+    bad = count("strand_lbl NOT IN (1,-1) OR strand_lbl IS NULL")
     report("strand_lbl is always 1 or -1", bad == 0, f"{bad} rows" if bad else "")
 
-    bad = con.execute(
-        f"SELECT COUNT(*) FROM {TABLE} WHERE start IS NOT NULL AND "
-        f"(start != target_from_coord OR end != target_to_coord OR strand != strand_lbl)").fetchone()[0]
+    bad = count("start IS NOT NULL AND (start != target_from_coord OR end != target_to_coord "
+                "OR strand != strand_lbl)")
     report("annotated rows: start/end/strand match the hit coordinates", bad == 0,
            f"{bad} rows" if bad else "")
 
-    bad = con.execute(
-        f"SELECT COUNT(*) FROM {TABLE} WHERE id IS NOT NULL AND info_gene_id IS NOT NULL AND id != info_gene_id").fetchone()[0]
+    bad = count("id IS NOT NULL AND info_gene_id IS NOT NULL AND id != info_gene_id")
     report("id == info_gene_id where both are set", bad == 0, f"{bad} rows" if bad else "")
 
-    bad = con.execute(
-        f"SELECT COUNT(*) FROM {TABLE} WHERE seq IS NOT NULL AND seq GLOB '*[^ACGTUNMRWSYKVHDBacgtunmrwsykvhdb]*'").fetchone()[0]
+    bad = count("seq IS NOT NULL AND seq GLOB '*[^ACGTUNMRWSYKVHDBacgtunmrwsykvhdb]*'")
     report("seq contains only nucleotide letters", bad == 0, f"{bad} rows" if bad else "")
 
-    bad = con.execute(f"SELECT COUNT(*) FROM {TABLE} WHERE specie IS NULL OR chr IS NULL OR query_accession IS NULL").fetchone()[0]
+    bad = count("start IS NOT NULL AND seq IS NULL")
+    report("annotated rows always have a seq", bad == 0, f"{bad} rows" if bad else "")
+
+    # catches column-shift problems: sequences / coordinates landing in a text column
+    allowed = ",".join(f"'{v}'" for v in ALLOWED_OVERLAP)
+    bad_vals = [r[0] for r in con.execute(
+        f"SELECT DISTINCT substr(overlap_type,1,30) FROM {TABLE} "
+        f"WHERE overlap_type IS NOT NULL AND overlap_type NOT IN ({allowed}) LIMIT 5")]
+    report(f"overlap_type is NULL or one of {'/'.join(ALLOWED_OVERLAP)}", not bad_vals,
+           f"e.g. {bad_vals}" if bad_vals else "")
+
+    bad = count("loc_strand IS NOT NULL AND loc_strand NOT IN ('+','-','.','1','-1')")
+    report("loc_strand looks like a strand symbol", bad == 0, f"{bad} rows" if bad else "")
+
+    bad = count("specie IS NULL OR chr IS NULL OR query_accession IS NULL")
     report("specie, chr, query_accession never empty", bad == 0, f"{bad} rows" if bad else "")
     return fails
 
@@ -162,8 +209,13 @@ def main():
     ap.add_argument("--max-rows", type=int, metavar="N", help="TEST: at most N data rows per file")
     ap.add_argument("--kingdom", action="append", help="only this kingdom (repeatable), e.g. --kingdom fungi")
     ap.add_argument("--run", action="append", help="only run dirs containing this text (repeatable)")
+    ap.add_argument("--short-ids", action="store_true",
+                    help="store kingdom as 'fungi' and run_id without date/prefix "
+                         "(default: folder names as-is)")
     ap.add_argument("--overwrite", action="store_true", help="replace the output db if it exists")
     ap.add_argument("--dry-run", action="store_true", help="list selected files and exit")
+    ap.add_argument("--scan-headers", action="store_true",
+                    help="summarize the distinct header layouts of the selected files and exit")
     args = ap.parse_args()
 
     base = Path(args.base)
@@ -174,11 +226,21 @@ def main():
     files = select_files(base, args)
     if not files:
         sys.exit("No report files found")
+
+    def ids(rel):
+        if args.short_ids:
+            return kingdom_from_dir(rel.parts[0]), run_id_from_dir(rel.parts[1])
+        return rel.parts[0], rel.parts[1]
+
     if args.dry_run:
         for f in files:
             rel = f.relative_to(base)
-            print(f"{kingdom_from_dir(rel.parts[0])}\t{run_id_from_dir(rel.parts[1])}\t{rel}")
+            k, r = ids(rel)
+            print(f"{k}\t{r}\t{rel}")
         print(f"{len(files)} files")
+        return
+    if args.scan_headers:
+        scan_headers(files, base)
         return
 
     if db.exists():
@@ -193,16 +255,15 @@ def main():
         + [f'"{n}" {t}' for n, t in REPORT_COLS]
         + [f'"{c}" TEXT' for c in EXTRA_COLS])
     con.execute(f"CREATE TABLE {TABLE} (\n    {cols_sql}\n)")
-    insert_sql = f"INSERT INTO {TABLE} VALUES ({','.join('?' * (NCOL + 2 + len(EXTRA_COLS)))})"
+    insert_sql = f"INSERT INTO {TABLE} VALUES ({','.join('?' * (2 + NCOL + len(EXTRA_COLS)))})"
 
     n_ok = n_skip = n_empty = expected_total = 0
     per_file_expected = defaultdict(int)
+    layout_counts = Counter()
+
     for f in files:
         rel = f.relative_to(base)
-        # kingdom = kingdom_from_dir(rel.parts[0])
-        kingdom = rel.parts[0]
-        # run_id = run_id_from_dir(rel.parts[1])
-        run_id = rel.parts[1]
+        kingdom, run_id = ids(rel)
         rows, bad = [], None
 
         if f.stat().st_size == 0:
@@ -222,18 +283,37 @@ def main():
                 n_skip += 1
                 continue
 
-            if len(header) != NCOL:
-                print(f"WARN header has {len(header)} fields (expected {NCOL}): {rel}", file=sys.stderr)
+            unknown = [h for h in header if h not in COL_NAMES]
+            missing_req = [c for c in REQUIRED_COLS if c not in header]
+            dupes = [h for h, c in Counter(header).items() if c > 1]
+            if unknown or missing_req or dupes:
+                print(f"SKIP (unknown={unknown} missing_required={missing_req} "
+                      f"duplicated={dupes}): {rel}", file=sys.stderr)
+                n_skip += 1
+                continue
+
+            missing = [n for n in COL_NAMES if n not in header]
+            if missing:
+                print(f"NOTE {len(header)} columns, missing {missing} (stored as NULL): {rel}",
+                      file=sys.stderr)
+            layout_counts[tuple(header)] += 1
+
+            # canonical column name -> index in THIS file (None if absent)
+            idx = [header.index(n) if n in header else None for n in COL_NAMES]
+            hlen = len(header)
+            info_i = header.index("info") if "info" in header else None
 
             for lineno, row in enumerate(reader, start=2):
                 if not row:
                     continue
-                if len(row) > NCOL:
-                    bad = f"{len(row)} fields (> {NCOL}) at line {lineno}"
+                if len(row) > hlen:
+                    bad = f"{len(row)} fields (> {hlen}) at line {lineno}"
                     break
-                row += [""] * (NCOL - len(row))
-                row = [v if v != "" else None for v in row]
-                rows.append([kingdom, run_id] + row + parse_info(row[INFO_IDX]))
+                row += [""] * (hlen - len(row))
+                vals = [row[i] if i is not None else "" for i in idx]
+                vals = [v if v != "" else None for v in vals]
+                info = row[info_i] if info_i is not None else None
+                rows.append([kingdom, run_id] + vals + parse_info(info))
                 if args.max_rows and len(rows) >= args.max_rows:
                     break
         if bad:
@@ -256,6 +336,11 @@ def main():
         db.unlink()
         sys.exit("No reports imported")
 
+    print(f"\nHeader layouts imported: {len(layout_counts)}")
+    for hdr, c in layout_counts.most_common():
+        print(f"  {c} files, {len(hdr)} columns"
+              + ("" if len(hdr) == NCOL else f", missing {[n for n in COL_NAMES if n not in hdr]}"))
+
     print("\nIntegrity checks:")
     fails = integrity_checks(con, expected_total, per_file_expected)
 
@@ -267,9 +352,9 @@ def main():
     con.execute("ANALYZE")
     con.commit()
 
-
     print(f"\nDB: {db}")
-    print(f"Imported {n_ok} reports ({expected_total} rows), empty/no-hit {n_empty}, skipped errors {n_skip}, integrity failures {fails}")
+    print(f"Imported {n_ok} reports ({expected_total} rows), empty/no-hit {n_empty}, "
+          f"skipped errors {n_skip}, integrity failures {fails}")
     print("kingdom\trun_id\tn\tannotated\twith_seq")
     for r in con.execute(f"SELECT ensembl_kingdom, run_id, COUNT(*), COUNT(start), COUNT(seq) "
                          f"FROM {TABLE} GROUP BY 1,2"):
