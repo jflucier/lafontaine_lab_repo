@@ -10,11 +10,20 @@
 # Expects <run_dir>/<rf_model>/<run>_<rf_model>.sqlite and writes, in <run_dir>/<rf_model>/ :
 #   <rf_model>.ensembl.genome.riboswitch.report.tsv            (all hits, left join on gene_info)
 #   <rf_model>.ensembl.genome.riboswitch.report.geneoverlap.tsv (only hits overlapping a gene)
+#
+# NOTE: ann.gene is stored as a list string like ['id1', 'id2'], so it is split with
+# json_each and joined to gene_info.id (one output row per gene).
 set -uo pipefail
 
 run_dir=$(realpath "${1:?usage: $0 <run_dir> [gene_info.sqlite]}")
 gene_info=$(realpath "${2:-${run_dir}/../release-61/gene_info.sqlite}")
 [[ -f "$gene_info" ]] || { echo "ERROR: gene_info not found: $gene_info" >&2; exit 1; }
+# the gene_info join is by id: make sure gene_info is indexed on it (one-time)
+if [[ -z "$(sqlite3 "$gene_info" '.indexes gene_info')" ]]; then
+  echo "creating index on gene_info(id) (one-time)"
+  sqlite3 "$gene_info" 'CREATE INDEX IF NOT EXISTS idx_gene_info_id ON gene_info(id)' \
+    || echo "WARN: could not index gene_info (read-only?) -- joins will be slow" >&2
+fi
 
 # $1=sqlite file  $2=rf model (= table suffix)  $3=join type for gene_info (LEFT|INNER)  $4=output tsv
 run_query() {
@@ -63,7 +72,11 @@ from
       AND ann.start=rs.target_from_coord
       AND ann.end=rs.target_to_coord
       AND ann.strand=rs.strand_lbl
-  ${jointype} join db2.gene_info g on g.id=ann.gene
+  left join json_each(
+      CASE WHEN ann.gene LIKE '[%' AND json_valid(replace(ann.gene, '''', '\"'))
+           THEN replace(ann.gene, '''', '\"')
+           ELSE json_array(ann.gene) END) gj
+  ${jointype} join db2.gene_info g on g.id=gj.value
   left join rs_ensembl_genomes_annot_strandspec_seq_${db_rf_model} seq
     on seq.specie=rs.specie
       AND seq.chr=rs.target_name
